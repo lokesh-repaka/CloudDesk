@@ -1,16 +1,18 @@
 import json
 import logging
 from io import StringIO
+
 import pytest
+
 from backend.app.core.config import Settings, get_settings
 from backend.app.core.logging import (
     JSONFormatter,
-    setup_logging,
-    set_request_id,
-    get_request_id,
-    set_workflow_id,
-    get_workflow_id,
     clear_context,
+    get_request_id,
+    get_workflow_id,
+    set_request_id,
+    set_workflow_id,
+    setup_logging,
 )
 
 

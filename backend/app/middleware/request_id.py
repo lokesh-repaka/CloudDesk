@@ -1,9 +1,11 @@
 import re
 import uuid
+
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
-from backend.app.core.logging import set_request_id, clear_context
+
+from backend.app.core.logging import clear_context, set_request_id
 
 # Allow alphanumeric, dashes, and underscores up to 128 chars; strip CRLF to prevent header injection
 SAFE_REQUEST_ID_REGEX = re.compile(r"^[a-zA-Z0-9_\-]{1,128}$")
