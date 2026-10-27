@@ -18,6 +18,7 @@ dev = [
     "openpyxl>=3.1.5",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.1",
+    "ruff>=0.17.3",
 ]
 
 [tool.pytest.ini_options]

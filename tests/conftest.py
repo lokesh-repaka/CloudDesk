@@ -1,6 +1,6 @@
 import datetime
 import os
-import tempfile
+
 import jwt
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -30,7 +30,7 @@ def settings() -> Settings:
 
 def create_offline_token(email: str, role: str, sub: str, secret: str) -> str:
     """Generate a test JWT token valid for 8 hours signed with the test secret."""
-    now = datetime.datetime.now(datetime.timezone.utc)
+    now = datetime.datetime.now(datetime.UTC)
     payload = {
         "sub": sub,
         "email": email,

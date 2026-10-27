@@ -1,7 +1,6 @@
 import datetime
+
 import jwt
-import pytest
-from backend.app.core.config import get_settings
 
 
 def test_offline_env_vars_active(settings):
@@ -24,7 +23,7 @@ def test_auth_fixtures_generate_valid_tokens(settings, admin_headers, agent_head
     admin_payload = jwt.decode(admin_token, secret, algorithms=["HS256"])
     assert admin_payload["role"] == "admin"
     assert admin_payload["email"] == "admin@clouddesk.demo"
-    assert admin_payload["exp"] > datetime.datetime.now(datetime.timezone.utc).timestamp()
+    assert admin_payload["exp"] > datetime.datetime.now(datetime.UTC).timestamp()
 
     # Verify Agent fixture
     assert "Authorization" in agent_headers

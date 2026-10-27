@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
+
 from backend.app.core.config import get_settings
 
 router = APIRouter(tags=["health"])
@@ -26,9 +27,7 @@ def probe_readiness() -> tuple[bool, dict[str, str]]:
         is_ready = False
 
     # Vector store configuration probe
-    if settings.VECTOR_STORE == "memory":
-        checks["vector_store"] = "ok"
-    elif settings.VECTOR_STORE == "qdrant" and settings.QDRANT_URL:
+    if settings.VECTOR_STORE == "memory" or settings.VECTOR_STORE == "qdrant" and settings.QDRANT_URL:
         checks["vector_store"] = "ok"
     else:
         checks["vector_store"] = "unconfigured_vector_store"
