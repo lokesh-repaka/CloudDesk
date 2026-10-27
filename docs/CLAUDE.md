@@ -1,5 +1,8 @@
 # CLAUDE.md – Project 1: Autonomous Customer Support & Resolution Platform
 
+> Single source of truth for architecture, domain models, and system specifications.
+> Task Tracker: [TASKS.md](TASKS.md) · Full Plan: [PLAN.md](PLAN.md) · Playbook: [SKILLS.md](SKILLS.md) · Working Memory: [MEMORY.md](MEMORY.md)
+
 This file is the single source of truth for building "Autonomous Customer Support & Resolution Platform". Read it before writing any code. When this file and a phase plan disagree, this file wins; update it first, then the code.
 
 ---
@@ -533,10 +536,10 @@ the same principles: policy outside the model, approval gates, audit trail.
 
 ## 19. Phase plan
 
-The 13-phase build is [`PLAN_PHASE.md`](PLAN_PHASE.md). Each phase states a goal, files touched,
+The 13-phase execution order and task tracking is in [`TASKS.md`](TASKS.md). Each phase states a goal, files touched,
 PRD rows covered, tests added, a `make demo` checkpoint, and exit criteria. [`PLAN.md`](PLAN.md)
 is the requirement catalog. [`MEMORY.md`](MEMORY.md) holds locked facts and honest status. The
-agent procedure is [`.cursor/skills/clouddesk-support/SKILL.md`](.cursor/skills/clouddesk-support/SKILL.md).
+engineering guidelines and agent playbook are defined in [`SKILLS.md`](SKILLS.md).
 
 Course documents 00–17 are not in this repo. Phase boundaries follow the dependency order in
 this file. Stage 17 is optional and is not a core exit criterion.
