@@ -15,8 +15,10 @@ from backend.app.core.logging import (
 
 
 class TestSettings:
-    def test_default_settings(self):
+    def test_default_settings(self, monkeypatch):
         """Test default values conform to CLAUDE.md specification."""
+        monkeypatch.delenv("DATABASE_URL", raising=False)
+        monkeypatch.delenv("CHECKPOINT_DB_PATH", raising=False)
         settings = Settings()
         assert settings.DEMO_MODE is True
         assert settings.ENVIRONMENT == "development"
