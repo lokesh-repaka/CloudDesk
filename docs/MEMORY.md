@@ -130,8 +130,8 @@ Update each row in place. Do not mark a row done from intention.
 | Surface | State on 2026-10-27 |
 |---|---|
 | Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md)) organized in `docs/`. Backend core settings and logging implemented. |
-| Implemented | P1-1 completed: cached `Settings` via Pydantic v2 and structured JSON logging with contextvars for `request_id` and `workflow_id`. |
-| Validated locally | `tests/unit/test_config_logging.py`: 14 passed on this machine. |
+| Implemented | P1-1 completed: cached `Settings` via Pydantic v2, production JWT secret enforcement, structured JSON logging with contextvars for `request_id` and `workflow_id`, and automatic sensitive field redaction. |
+| Validated locally | `tests/unit/test_config_logging.py`: 17 passed on this machine. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow files are not in the repo. None have been executed. |

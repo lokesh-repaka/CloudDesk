@@ -33,6 +33,26 @@ STANDARD_LOG_RECORD_ATTRS = {
     "threadName",
 }
 
+SENSITIVE_KEY_PATTERNS = {
+    "password",
+    "secret",
+    "token",
+    "api_key",
+    "apikey",
+    "authorization",
+    "access_token",
+    "refresh_token",
+    "private_key",
+    "credit_card",
+    "card_number",
+}
+
+
+def is_sensitive_key(key: str) -> bool:
+    """Check if a log record attribute name contains sensitive terms."""
+    lowered = key.lower().replace("-", "_")
+    return any(pattern in lowered for pattern in SENSITIVE_KEY_PATTERNS)
+
 
 def set_request_id(request_id: str | None) -> None:
     """Set the request_id context variable."""
@@ -78,10 +98,13 @@ class JSONFormatter(logging.Formatter):
         if record.exc_info:
             log_entry["exception"] = self.formatException(record.exc_info)
 
-        # Include custom extra fields
+        # Include custom extra fields with sensitive value redaction
         for key, value in record.__dict__.items():
             if key not in STANDARD_LOG_RECORD_ATTRS and key not in log_entry:
-                log_entry[key] = value
+                if is_sensitive_key(key):
+                    log_entry[key] = "***REDACTED***"
+                else:
+                    log_entry[key] = value
 
         return json.dumps(log_entry, default=str)
 

@@ -83,6 +83,21 @@ class TestSettings:
         assert settings.MAX_REFUND_WITHOUT_APPROVAL == 50.0
         assert settings.APPROVAL_REQUIRED_FOR_REFUNDS is False
 
+    def test_production_rejects_default_jwt_secret(self, monkeypatch):
+        """In production or staging, default dev secret is rejected."""
+        monkeypatch.setenv("ENVIRONMENT", "production")
+        monkeypatch.setenv("JWT_SECRET", "dev-secret-change-in-prod")
+        monkeypatch.delenv("SUPABASE_JWT_SECRET", raising=False)
+        with pytest.raises(ValueError, match="Production or staging deployments must specify a secure"):
+            Settings()
+
+    def test_production_accepts_valid_jwt_secret(self, monkeypatch):
+        """In production, a custom secure secret is accepted."""
+        monkeypatch.setenv("ENVIRONMENT", "production")
+        monkeypatch.setenv("JWT_SECRET", "super-secret-unique-production-key-999")
+        settings = Settings()
+        assert settings.effective_jwt_secret == "super-secret-unique-production-key-999"
+
 
 class TestJSONLogging:
     @pytest.fixture(autouse=True)
@@ -220,3 +235,27 @@ class TestJSONLogging:
         output = stream.getvalue().strip()
         last_line = json.loads(output.splitlines()[-1])
         assert last_line["payload"] == "custom-data-obj"
+
+    def test_json_formatter_masks_sensitive_extra_fields(self):
+        stream = StringIO()
+        setup_logging(level="INFO", stream=stream)
+
+        logger = logging.getLogger("security.redaction.test")
+        logger.info(
+            "Authentication event",
+            extra={
+                "username": "admin",
+                "password": "super-secret-password",
+                "api_key": "sk-1234567890",
+                "token": "bearer-token-abc",
+                "normal_field": "visible-data",
+            },
+        )
+
+        output = stream.getvalue().strip()
+        last_line = json.loads(output.splitlines()[-1])
+        assert last_line["username"] == "admin"
+        assert last_line["normal_field"] == "visible-data"
+        assert last_line["password"] == "***REDACTED***"
+        assert last_line["api_key"] == "***REDACTED***"
+        assert last_line["token"] == "***REDACTED***"

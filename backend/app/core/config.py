@@ -1,7 +1,7 @@
 import json
 from functools import lru_cache
 from typing import Any
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -73,6 +73,17 @@ class Settings(BaseSettings):
         if isinstance(value, list):
             return [str(item).strip() for item in value]
         return value
+
+    @model_validator(mode="after")
+    def validate_production_security(self) -> "Settings":
+        """Refuse to run in production or staging with known insecure default secrets."""
+        env = self.ENVIRONMENT.strip().lower()
+        if env in ("production", "staging"):
+            if not self.SUPABASE_JWT_SECRET and self.JWT_SECRET == "dev-secret-change-in-prod":
+                raise ValueError(
+                    "Production or staging deployments must specify a secure, unique JWT_SECRET or SUPABASE_JWT_SECRET."
+                )
+        return self
 
     @property
     def effective_jwt_secret(self) -> str:
