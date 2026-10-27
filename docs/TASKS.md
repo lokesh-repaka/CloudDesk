@@ -1,14 +1,12 @@
 # CloudDesk Support — Task tracker
 
 > Concise checklist for GitHub-visible progress.
-> Full plan: `PLAN.md` · Phase exit criteria: `PLAN_PHASE.md` · Spec: `CLAUDE.md`
+> Architecture & Spec: [CLAUDE.md](CLAUDE.md) · Full Plan: [PLAN.md](PLAN.md) · Engineering Playbook: [SKILLS.md](SKILLS.md) · Working Memory: [MEMORY.md](MEMORY.md)
 
 **Branch convention:** `feature/<repo-name>` (one feature branch per sub-task; open the PR against `development`)
 **Status:** `Pending ❌` · `Completed ✅`
 
 Sub-tasks in the same phase that do not share files can be open at the same time. Do not stack a branch on another feature branch. Merge the listed predecessor first when a row names one.
-
-`PLAN_PHASE.md` is still the exit-criteria spec. This file is the execution order, arranged so a phase waits only on the contract it uses.
 
 ---
 
@@ -19,7 +17,7 @@ Sub-tasks in the same phase that do not share files can be open at the same time
 
 | Task | Branch | Status |
 |------|--------|--------|
-| P1-1 · Settings and JSON logging | `feature/backend-config-logging` | Pending ❌ |
+| P1-1 · Settings and JSON logging | `feature/backend-config-logging` | Completed ✅ |
 | P1-2 · Health routes and request-id middleware | `feature/backend-health-request-id` | Pending ❌ |
 | P1-3 · Offline pytest harness | `feature/test-harness-offline` | Pending ❌ |
 | P1-4 · Makefile and `.env.example` | `feature/makefile-env-example` | Pending ❌ |

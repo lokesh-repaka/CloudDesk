@@ -1,6 +1,6 @@
 # PLAN.md — CloudDesk Project 1
 
-Build plan for the autonomous support-resolution platform. `CLAUDE.md` is the spec. `PLAN_PHASE.md` is the order of work. This file is the requirement catalog and the exit bar for the whole project.
+Build plan for the autonomous support-resolution platform. [CLAUDE.md](CLAUDE.md) is the spec. [TASKS.md](TASKS.md) is the order of work and tracking. [SKILLS.md](SKILLS.md) defines the developer guidelines. This file is the requirement catalog and the exit bar for the whole project.
 
 ## Goal
 
