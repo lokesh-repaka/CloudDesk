@@ -129,13 +129,13 @@ Update each row in place. Do not mark a row done from intention.
 
 | Surface | State on 2026-10-27 |
 |---|---|
-| Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md)) organized in `docs/`. Backend core settings, JSON logging, health routes, request-id middleware, and CORS implemented. |
-| Implemented | P1-1 and P1-2 completed: cached settings, structured JSON logging with contextvars, unprefixed health routes (`/health`, `/health/live`, `/health/ready`), `RequestIdMiddleware`, and CORS exposing `X-Request-ID`. |
-| Validated locally | `tests/unit/test_config_logging.py` and `tests/api/test_health.py`: 26 passed on this machine. |
+| Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md)) organized in `docs/`. Backend core settings, JSON logging, health routes, request-id middleware, CORS, and offline test harness implemented. |
+| Implemented | P1-1, P1-2, and P1-3 completed: cached settings, structured JSON logging with contextvars, unprefixed health routes (`/health`, `/health/live`, `/health/ready`), `RequestIdMiddleware`, CORS, offline test harness in `tests/conftest.py` with demo auth fixtures (`admin_headers`, `agent_headers`, `viewer_headers`), and Excel tracking sheets. |
+| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, and `tests/unit/test_offline_harness.py`: 30 passed on this machine. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow `.github/workflows/test.yml` active in repo. |
-| Phase plan | Phase 1 in progress (P1-1 and P1-2 completed, P1-3 and P1-4 pending). Phases 2–13 are not started. |
+| Phase plan | Phase 1 in progress (P1-1, P1-2, and P1-3 completed, P1-4 pending). Phases 2–13 are not started. |
 
 ## Open questions from `CLAUDE.md` §20
 

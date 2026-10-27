@@ -1,13 +1,6 @@
 import uuid
 import pytest
-from starlette.testclient import TestClient
-from backend.app.main import app
 from backend.app.core.config import get_settings
-
-
-@pytest.fixture
-def client():
-    return TestClient(app)
 
 
 class TestHealthEndpoints:
