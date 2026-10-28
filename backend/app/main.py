@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.app.api import health
+from backend.app.api import auth, health
 from backend.app.core.config import get_settings
 from backend.app.core.logging import setup_logging
 from backend.app.middleware.request_id import RequestIdMiddleware
@@ -52,6 +52,9 @@ def create_application() -> FastAPI:
 
     # Health routes (unprefixed as per CLAUDE.md)
     app.include_router(health.router)
+
+    # API v1 routes
+    app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 
     return app
 
