@@ -40,10 +40,12 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Middleware order (outermost last): CORS -> RequestId -> RateLimit
+    # Middleware order (outermost last): CORS -> RequestId -> RateLimit -> Audit
     # In Starlette, later-added middleware wraps earlier-added middleware.
+    from backend.app.middleware.audit import AuditMiddleware
     from backend.app.middleware.rate_limit import RateLimitMiddleware
 
+    app.add_middleware(AuditMiddleware)
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(RequestIdMiddleware)
     app.add_middleware(
