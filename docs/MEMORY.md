@@ -129,13 +129,13 @@ Update each row in place. Do not mark a row done from intention.
 
 | Surface | State on 2026-10-28 |
 |---|---|
-| Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md)) organized in `docs/`. Backend core settings, JSON logging, health routes, request-id middleware, CORS, offline test harness, Makefile, `.env.example`, domain schemas, and SQLAlchemy 2.0 models in place. |
-| Implemented | Phase 1 (Runtime skeleton) complete. Phase 2 Task P2-1 complete: `backend/app/schemas/common.py` (10 canonical categories, ticket statuses, severities, roles, plans, workflow statuses) and `backend/app/models/entities.py` (16 portable SQLAlchemy declarative models with UUID4 and UTC timestamps). |
-| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, `tests/unit/test_offline_harness.py`, `tests/deployment/test_env_example.py`, and `tests/unit/test_entities.py`: 50 passed on this machine. `make lint` clean. |
+| Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md)) organized in `docs/`. Backend core settings, JSON logging, health routes, request-id middleware, CORS, offline test harness, Makefile, `.env.example`, domain schemas, SQLAlchemy 2.0 models, and PostgreSQL DDL/RLS/migrations in place. |
+| Implemented | Phase 1 (Runtime skeleton) complete. Phase 2 Tasks P2-1 and P2-2 complete: `backend/app/schemas/common.py` (canonical enums), `backend/app/models/entities.py` (16 SQLAlchemy models), `database/schema.sql` (Postgres DDL for 16 tables + triggers), `database/rls_policies.sql` (RLS policies for all tables + service_role bypass), and `database/migrations/0001_initial_schema.sql`. |
+| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, `tests/unit/test_offline_harness.py`, `tests/deployment/test_env_example.py`, `tests/unit/test_entities.py`, and `tests/unit/test_postgres_schema.py`: 60 passed on this machine. `make lint` clean. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow `.github/workflows/test.yml` active with ruff linter and pytest suite. |
-| Phase plan | Phase 1 complete. Phase 2 Task P2-1 complete. P2-2 (Postgres schema/RLS/migrations) and P2-3 (Repository layer) unblocked. |
+| Phase plan | Phase 1 complete. Phase 2 Tasks P2-1 and P2-2 complete. P2-3 (Repository layer) unblocked. |
 
 ## Open questions from `CLAUDE.md` §20
 
