@@ -130,12 +130,12 @@ Update each row in place. Do not mark a row done from intention.
 | Surface | State on 2026-10-28 |
 |---|---|
 | Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md)) organized in `docs/`. Backend core settings, JSON logging, health routes, request-id middleware, CORS, offline test harness, Makefile, `.env.example`, domain schemas, SQLAlchemy 2.0 models, PostgreSQL DDL/RLS/migrations, async database core, repository layer, sample dataset fixtures (`sample_data/`), `database/seed.sql`, and demo bootstrap service in place. |
-| Implemented | Phase 1 (Runtime skeleton) and Phase 2 (Persistence and demo data) complete. Tasks P2-1, P2-2, P2-3, and P2-4 complete: `backend/app/schemas/common.py` (canonical enums), `backend/app/models/entities.py` (16 SQLAlchemy models), `database/schema.sql` (Postgres DDL for 16 tables + triggers), `database/rls_policies.sql` (RLS policies for all tables + service_role bypass), `database/migrations/0001_initial_schema.sql`, `database/seed.sql`, `backend/app/core/database.py`, `backend/app/repositories/`, `sample_data/` (8 customers, 13 tickets, 15 KB articles), and `backend/app/services/seed_service.py`. |
-| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, `tests/unit/test_offline_harness.py`, `tests/deployment/test_env_example.py`, `tests/unit/test_entities.py`, `tests/unit/test_postgres_schema.py`, `tests/unit/test_repositories.py`, and `tests/unit/test_seed_service.py`: 79 passed on this machine. `make lint` clean. |
+| Implemented | Phase 1 (Runtime skeleton) and Phase 2 (Persistence and demo data) complete. Phase 3 in progress: Task P3-1 complete (`backend/app/core/security.py` with HS256 JWT encode/decode, `AuthenticatedUser`, and `require_role` numerical hierarchy enforcement: viewer 1 < agent 2 < admin 3). |
+| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, `tests/unit/test_offline_harness.py`, `tests/deployment/test_env_example.py`, `tests/unit/test_entities.py`, `tests/unit/test_postgres_schema.py`, `tests/unit/test_repositories.py`, `tests/unit/test_seed_service.py`, and `tests/unit/test_security.py`: 101 passed on this machine. `make lint` clean. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow `.github/workflows/test.yml` active with ruff linter and pytest suite. |
-| Phase plan | Phase 1 and Phase 2 complete. Phase 3 (Identity and request guards) unblocked. |
+| Phase plan | Phase 1 and Phase 2 complete. Task P3-1 merged; unblocks P3-2 and downstream protected routes. |
 
 ## Open questions from `CLAUDE.md` §20
 
