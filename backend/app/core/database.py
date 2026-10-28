@@ -49,7 +49,7 @@ def get_session_factory(engine: AsyncEngine | None = None) -> async_sessionmaker
 
 
 async def get_db(engine: AsyncEngine | None = None) -> AsyncGenerator[AsyncSession]:
-    """FastAPI dependency yielding an async database session with automatic commit/rollback."""
+    """Yield an async database session with automatic commit/rollback."""
     factory = get_session_factory(engine)
     async with factory() as session:
         try:
@@ -58,6 +58,12 @@ async def get_db(engine: AsyncEngine | None = None) -> AsyncGenerator[AsyncSessi
         except Exception:
             await session.rollback()
             raise
+
+
+async def get_db_session() -> AsyncGenerator[AsyncSession]:
+    """FastAPI dependency yielding an async database session from the default engine."""
+    async for session in get_db():
+        yield session
 
 
 async def create_tables(engine: AsyncEngine | None = None) -> None:
