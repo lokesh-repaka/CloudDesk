@@ -130,12 +130,12 @@ Update each row in place. Do not mark a row done from intention.
 | Surface | State on 2026-10-28 |
 |---|---|
 | Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md)) organized in `docs/`. Backend core settings, JSON logging, health routes, request-id middleware, CORS, offline test harness, Makefile, `.env.example`, domain schemas, SQLAlchemy 2.0 models, PostgreSQL DDL/RLS/migrations, async database core, repository layer, sample dataset fixtures (`sample_data/`), `database/seed.sql`, and demo bootstrap service in place. |
-| Implemented | Phase 1 (Runtime skeleton) and Phase 2 (Persistence and demo data) complete. Phase 3 in progress: Tasks P3-1, P3-2, and P3-3 complete (`backend/app/core/security.py`, `backend/app/schemas/auth.py`, `backend/app/api/auth.py`, `backend/app/core/redis.py` with FakeRedis fallback, and `backend/app/middleware/rate_limit.py` with 120/min ceiling and 429 Retry-After handling). |
-| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, `tests/unit/test_offline_harness.py`, `tests/deployment/test_env_example.py`, `tests/unit/test_entities.py`, `tests/unit/test_postgres_schema.py`, `tests/unit/test_repositories.py`, `tests/unit/test_seed_service.py`, `tests/unit/test_security.py`, `tests/api/test_auth.py`, `tests/unit/test_redis.py`, and `tests/unit/test_rate_limit.py`: 127 passed on this machine. `make lint` clean. |
+| Implemented | Phase 1 (Runtime skeleton), Phase 2 (Persistence and demo data), and Phase 3 (Identity and request guards: P3-1, P3-2, P3-3, P3-4) complete. Implemented `AuditMiddleware` logging state-changing requests (POST, PUT, PATCH, DELETE) to `audit_logs` table while strictly excluding safe read methods (GET, HEAD, OPTIONS); enforced architectural middleware pipeline order: CORS (outermost) -> RequestId -> RateLimit -> Audit (innermost). |
+| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, `tests/unit/test_offline_harness.py`, `tests/deployment/test_env_example.py`, `tests/unit/test_entities.py`, `tests/unit/test_postgres_schema.py`, `tests/unit/test_repositories.py`, `tests/unit/test_seed_service.py`, `tests/unit/test_security.py`, `tests/api/test_auth.py`, `tests/unit/test_redis.py`, `tests/unit/test_rate_limit.py`, and `tests/unit/test_audit_middleware.py`: 133 passed on this machine. `make lint` clean. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow `.github/workflows/test.yml` active with ruff linter and pytest suite. |
-| Phase plan | Phase 1 and Phase 2 complete. Tasks P3-1, P3-2, and P3-3 complete; unblocks P3-4 (Audit middleware) and Phase 4. |
+| Phase plan | Phase 1, Phase 2, and Phase 3 complete; unblocks Phase 4 (Support API). |
 
 ## Open questions from `CLAUDE.md` §20
 
