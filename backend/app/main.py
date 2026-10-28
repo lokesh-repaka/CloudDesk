@@ -22,8 +22,10 @@ async def lifespan(app: FastAPI):
         await bootstrap_demo_data()
     yield
     from backend.app.core.database import dispose_engine
+    from backend.app.core.redis import close_redis_client
 
     await dispose_engine()
+    await close_redis_client()
 
 
 def create_application() -> FastAPI:
@@ -38,8 +40,11 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Middleware order (outermost last): CORS -> RequestId
-    # Adding RequestId first, then CORS makes CORS outermost.
+    # Middleware order (outermost last): CORS -> RequestId -> RateLimit
+    # In Starlette, later-added middleware wraps earlier-added middleware.
+    from backend.app.middleware.rate_limit import RateLimitMiddleware
+
+    app.add_middleware(RateLimitMiddleware)
     app.add_middleware(RequestIdMiddleware)
     app.add_middleware(
         CORSMiddleware,
@@ -47,7 +52,13 @@ def create_application() -> FastAPI:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
-        expose_headers=["X-Request-ID"],
+        expose_headers=[
+            "X-Request-ID",
+            "X-RateLimit-Limit",
+            "X-RateLimit-Remaining",
+            "X-RateLimit-Reset",
+            "Retry-After",
+        ],
     )
 
     # Health routes (unprefixed as per CLAUDE.md)
