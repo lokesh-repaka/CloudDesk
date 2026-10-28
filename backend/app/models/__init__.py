@@ -1,0 +1,41 @@
+"""CloudDesk persistence entities package."""
+
+from backend.app.models.entities import (
+    ApprovalRequest,
+    AuditLog,
+    Base,
+    Customer,
+    CustomerMemory,
+    Escalation,
+    Incident,
+    Product,
+    Profile,
+    ResolutionAction,
+    Subscription,
+    SupportArticle,
+    Ticket,
+    TicketMessage,
+    WorkflowEvent,
+    WorkflowRun,
+    Workspace,
+)
+
+__all__ = [
+    "ApprovalRequest",
+    "AuditLog",
+    "Base",
+    "Customer",
+    "CustomerMemory",
+    "Escalation",
+    "Incident",
+    "Product",
+    "Profile",
+    "ResolutionAction",
+    "Subscription",
+    "SupportArticle",
+    "Ticket",
+    "TicketMessage",
+    "WorkflowEvent",
+    "WorkflowRun",
+    "Workspace",
+]
