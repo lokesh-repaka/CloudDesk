@@ -33,7 +33,7 @@ Sub-tasks in the same phase that do not share files can be open at the same time
 |------|--------|--------|
 | P2-1 · SQLAlchemy entities and category enum | `feature/sqlalchemy-entities` | Completed ✅ |
 | P2-2 · Postgres schema, RLS, and migrations | `feature/postgres-schema-rls` | Completed ✅ |
-| P2-3 · Repository layer | `feature/repository-layer` | Pending ❌ |
+| P2-3 · Repository layer | `feature/repository-layer` | Completed ✅ |
 | P2-4 · Sample data and demo bootstrap | `feature/sample-data-bootstrap` | Pending ❌ |
 
 ---

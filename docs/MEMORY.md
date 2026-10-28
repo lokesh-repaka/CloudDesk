@@ -129,13 +129,13 @@ Update each row in place. Do not mark a row done from intention.
 
 | Surface | State on 2026-10-28 |
 |---|---|
-| Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md)) organized in `docs/`. Backend core settings, JSON logging, health routes, request-id middleware, CORS, offline test harness, Makefile, `.env.example`, domain schemas, SQLAlchemy 2.0 models, and PostgreSQL DDL/RLS/migrations in place. |
-| Implemented | Phase 1 (Runtime skeleton) complete. Phase 2 Tasks P2-1 and P2-2 complete: `backend/app/schemas/common.py` (canonical enums), `backend/app/models/entities.py` (16 SQLAlchemy models), `database/schema.sql` (Postgres DDL for 16 tables + triggers), `database/rls_policies.sql` (RLS policies for all tables + service_role bypass), and `database/migrations/0001_initial_schema.sql`. |
-| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, `tests/unit/test_offline_harness.py`, `tests/deployment/test_env_example.py`, `tests/unit/test_entities.py`, and `tests/unit/test_postgres_schema.py`: 60 passed on this machine. `make lint` clean. |
+| Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md)) organized in `docs/`. Backend core settings, JSON logging, health routes, request-id middleware, CORS, offline test harness, Makefile, `.env.example`, domain schemas, SQLAlchemy 2.0 models, PostgreSQL DDL/RLS/migrations, async database core, and complete repository layer in place. |
+| Implemented | Phase 1 (Runtime skeleton) complete. Phase 2 Tasks P2-1, P2-2, and P2-3 complete: `backend/app/schemas/common.py` (canonical enums), `backend/app/models/entities.py` (16 SQLAlchemy models), `database/schema.sql` (Postgres DDL for 16 tables + triggers), `database/rls_policies.sql` (RLS policies for all tables + service_role bypass), `database/migrations/0001_initial_schema.sql`, `backend/app/core/database.py` (async engine & session), and `backend/app/repositories/` (BaseRepository, Customer, Workspace, Ticket, Message, Approval, Memory repositories). |
+| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, `tests/unit/test_offline_harness.py`, `tests/deployment/test_env_example.py`, `tests/unit/test_entities.py`, `tests/unit/test_postgres_schema.py`, and `tests/unit/test_repositories.py`: 71 passed on this machine. `make lint` clean. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow `.github/workflows/test.yml` active with ruff linter and pytest suite. |
-| Phase plan | Phase 1 complete. Phase 2 Tasks P2-1 and P2-2 complete. P2-3 (Repository layer) unblocked. |
+| Phase plan | Phase 1 complete. Phase 2 Tasks P2-1, P2-2, and P2-3 complete. P2-4 (Sample data and demo bootstrap) unblocked. |
 
 ## Open questions from `CLAUDE.md` §20
 
