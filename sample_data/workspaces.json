@@ -1,0 +1,74 @@
+[
+  {
+    "id": "ws-101",
+    "customer_id": "cust-101-acme",
+    "name": "Acme Main",
+    "slug": "acme-main",
+    "storage_used_bytes": 5368709120,
+    "storage_limit_bytes": 53687091200
+  },
+  {
+    "id": "ws-102",
+    "customer_id": "cust-101-acme",
+    "name": "Acme Staging",
+    "slug": "acme-staging",
+    "storage_used_bytes": 1073741824,
+    "storage_limit_bytes": 53687091200
+  },
+  {
+    "id": "ws-103",
+    "customer_id": "cust-102-globex",
+    "name": "Globex Core",
+    "slug": "globex-core",
+    "storage_used_bytes": 8589934592,
+    "storage_limit_bytes": 26843545600
+  },
+  {
+    "id": "ws-104",
+    "customer_id": "cust-103-initech",
+    "name": "Initech Prod",
+    "slug": "initech-prod",
+    "storage_used_bytes": 3221225472,
+    "storage_limit_bytes": 10737418240
+  },
+  {
+    "id": "ws-105",
+    "customer_id": "cust-104-umbrella",
+    "name": "Umbrella Research",
+    "slug": "umbrella-research",
+    "storage_used_bytes": 42949672960,
+    "storage_limit_bytes": 53687091200
+  },
+  {
+    "id": "ws-106",
+    "customer_id": "cust-105-stark",
+    "name": "Stark Lab",
+    "slug": "stark-lab",
+    "storage_used_bytes": 12884901888,
+    "storage_limit_bytes": 26843545600
+  },
+  {
+    "id": "ws-107",
+    "customer_id": "cust-106-wayne",
+    "name": "Wayne R&D",
+    "slug": "wayne-rd",
+    "storage_used_bytes": 4294967296,
+    "storage_limit_bytes": 10737418240
+  },
+  {
+    "id": "ws-108",
+    "customer_id": "cust-107-cyberdyne",
+    "name": "Cyberdyne Sandbox",
+    "slug": "cyberdyne-sandbox",
+    "storage_used_bytes": 1048576000,
+    "storage_limit_bytes": 1073741824
+  },
+  {
+    "id": "ws-109",
+    "customer_id": "cust-108-piedpiper",
+    "name": "Pied Piper Dev",
+    "slug": "piedpiper-dev",
+    "storage_used_bytes": 838860800,
+    "storage_limit_bytes": 1073741824
+  }
+]
