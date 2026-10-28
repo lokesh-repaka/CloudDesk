@@ -11,9 +11,19 @@ from backend.app.middleware.request_id import RequestIdMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifecycle management: initialize logging and future database tables."""
+    """Application lifecycle management: initialize logging, database tables, and demo bootstrap."""
     setup_logging()
+    settings = get_settings()
+    if settings.DEMO_MODE:
+        from backend.app.core.database import create_tables
+        from backend.app.services.seed_service import bootstrap_demo_data
+
+        await create_tables()
+        await bootstrap_demo_data()
     yield
+    from backend.app.core.database import dispose_engine
+
+    await dispose_engine()
 
 
 def create_application() -> FastAPI:

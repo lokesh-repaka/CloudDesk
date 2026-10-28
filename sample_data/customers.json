@@ -1,0 +1,50 @@
+[
+  {
+    "id": "cust-101-acme",
+    "name": "Acme Corporation",
+    "email": "support@acme.test",
+    "plan": "enterprise"
+  },
+  {
+    "id": "cust-102-globex",
+    "name": "Globex Dynamics",
+    "email": "admin@globex.test",
+    "plan": "business"
+  },
+  {
+    "id": "cust-103-initech",
+    "name": "Initech Software",
+    "email": "help@initech.test",
+    "plan": "pro"
+  },
+  {
+    "id": "cust-104-umbrella",
+    "name": "Umbrella BioTech",
+    "email": "security@umbrella.test",
+    "plan": "enterprise"
+  },
+  {
+    "id": "cust-105-stark",
+    "name": "Stark Enterprises",
+    "email": "ops@stark.test",
+    "plan": "business"
+  },
+  {
+    "id": "cust-106-wayne",
+    "name": "Wayne Tech",
+    "email": "contact@wayne.test",
+    "plan": "pro"
+  },
+  {
+    "id": "cust-107-cyberdyne",
+    "name": "Cyberdyne Systems",
+    "email": "sysadmin@cyberdyne.test",
+    "plan": "free"
+  },
+  {
+    "id": "cust-108-piedpiper",
+    "name": "Pied Piper Compression",
+    "email": "richard@piedpiper.test",
+    "plan": "free"
+  }
+]

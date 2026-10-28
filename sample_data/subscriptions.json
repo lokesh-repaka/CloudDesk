@@ -1,0 +1,66 @@
+[
+  {
+    "id": "sub-101-acme",
+    "customer_id": "cust-101-acme",
+    "plan": "enterprise",
+    "status": "active",
+    "seats": 50,
+    "current_period_end": "2027-12-31T23:59:59Z"
+  },
+  {
+    "id": "sub-102-globex",
+    "customer_id": "cust-102-globex",
+    "plan": "business",
+    "status": "active",
+    "seats": 20,
+    "current_period_end": "2027-10-15T23:59:59Z"
+  },
+  {
+    "id": "sub-103-initech",
+    "customer_id": "cust-103-initech",
+    "plan": "pro",
+    "status": "active",
+    "seats": 8,
+    "current_period_end": "2027-08-01T23:59:59Z"
+  },
+  {
+    "id": "sub-104-umbrella",
+    "customer_id": "cust-104-umbrella",
+    "plan": "enterprise",
+    "status": "active",
+    "seats": 100,
+    "current_period_end": "2027-12-31T23:59:59Z"
+  },
+  {
+    "id": "sub-105-stark",
+    "customer_id": "cust-105-stark",
+    "plan": "business",
+    "status": "active",
+    "seats": 25,
+    "current_period_end": "2027-11-20T23:59:59Z"
+  },
+  {
+    "id": "sub-106-wayne",
+    "customer_id": "cust-106-wayne",
+    "plan": "pro",
+    "status": "active",
+    "seats": 10,
+    "current_period_end": "2027-06-30T23:59:59Z"
+  },
+  {
+    "id": "sub-107-cyberdyne",
+    "customer_id": "cust-107-cyberdyne",
+    "plan": "free",
+    "status": "active",
+    "seats": 1,
+    "current_period_end": null
+  },
+  {
+    "id": "sub-108-piedpiper",
+    "customer_id": "cust-108-piedpiper",
+    "plan": "free",
+    "status": "active",
+    "seats": 1,
+    "current_period_end": null
+  }
+]
