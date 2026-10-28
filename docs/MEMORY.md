@@ -127,15 +127,15 @@ Cases live in `datasets/eval_cases.json` and each case needs a valid `expected_c
 
 Update each row in place. Do not mark a row done from intention.
 
-| Surface | State on 2026-10-27 |
+| Surface | State on 2026-10-28 |
 |---|---|
-| Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md)) organized in `docs/`. Backend core settings, JSON logging, health routes, request-id middleware, CORS, offline test harness, Makefile, and `.env.example` in place. |
-| Implemented | Phase 1 (Runtime skeleton) complete: cached settings, structured JSON logging with contextvars, unprefixed health routes, `RequestIdMiddleware`, CORS, offline test harness in `tests/conftest.py`, `Makefile`, `.env.example`, and Excel tracking sheets. |
-| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, `tests/unit/test_offline_harness.py`, and `tests/deployment/test_env_example.py`: 35 passed on this machine. `make lint` clean. |
+| Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md)) organized in `docs/`. Backend core settings, JSON logging, health routes, request-id middleware, CORS, offline test harness, Makefile, `.env.example`, domain schemas, and SQLAlchemy 2.0 models in place. |
+| Implemented | Phase 1 (Runtime skeleton) complete. Phase 2 Task P2-1 complete: `backend/app/schemas/common.py` (10 canonical categories, ticket statuses, severities, roles, plans, workflow statuses) and `backend/app/models/entities.py` (16 portable SQLAlchemy declarative models with UUID4 and UTC timestamps). |
+| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, `tests/unit/test_offline_harness.py`, `tests/deployment/test_env_example.py`, and `tests/unit/test_entities.py`: 50 passed on this machine. `make lint` clean. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow `.github/workflows/test.yml` active with ruff linter and pytest suite. |
-| Phase plan | Phase 1 complete. Phase 2 (Persistence and demo data) unblocked. Phases 2–13 are not started. |
+| Phase plan | Phase 1 complete. Phase 2 Task P2-1 complete. P2-2 (Postgres schema/RLS/migrations) and P2-3 (Repository layer) unblocked. |
 
 ## Open questions from `CLAUDE.md` §20
 

@@ -21,3 +21,16 @@ htmlcov/
 
 # Local databases & checkpoints
 data/
+
+# Specification documents & prompts
+user-stories.md
+docs/user-stories.md
+acceptance-criteria.md
+docs/acceptance-criteria.md
+architecture.md
+docs/architecture.md
+design.md
+docs/design.md
+docs/prompts/
+prompts/
+
