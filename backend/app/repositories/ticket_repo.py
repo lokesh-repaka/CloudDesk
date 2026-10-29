@@ -22,11 +22,12 @@ class TicketRepository(BaseRepository[Ticket]):
         super().__init__(Ticket, session)
 
     async def get_with_messages(self, ticket_id: str) -> Ticket | None:
-        """Fetch a ticket eager-loading conversation messages in chronological order."""
+        """Fetch a ticket eager-loading conversation messages and customer in chronological order."""
         stmt = (
             select(Ticket)
             .options(
-                selectinload(Ticket.messages)
+                selectinload(Ticket.messages),
+                selectinload(Ticket.customer),
             )
             .where(Ticket.id == ticket_id)
         )
@@ -43,12 +44,19 @@ class TicketRepository(BaseRepository[Ticket]):
         category: str | None = None,
         customer_id: str | None = None,
         assigned_to: str | None = None,
+        plan: str | None = None,
         offset: int = 0,
         limit: int = 50,
     ) -> tuple[list[Ticket], int]:
         """Fetch a paginated list of tickets matching filter criteria and total match count."""
-        base_stmt = select(Ticket)
+        from backend.app.models.entities import Customer
+
+        base_stmt = select(Ticket).options(selectinload(Ticket.customer))
         count_stmt = select(func.count()).select_from(Ticket)
+
+        if plan is not None:
+            base_stmt = base_stmt.join(Ticket.customer).where(Customer.plan == plan)
+            count_stmt = count_stmt.join(Ticket.customer).where(Customer.plan == plan)
 
         filters = []
         if status is not None:
