@@ -24,7 +24,9 @@ class CustomerRepository(BaseRepository[Customer]):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_with_workspaces_and_subscription(self, customer_id: str) -> Customer | None:
+    async def get_with_workspaces_and_subscription(
+        self, customer_id: str
+    ) -> Customer | None:
         """Fetch a customer eager-loading related workspaces and subscriptions."""
         stmt = (
             select(Customer)
@@ -55,6 +57,33 @@ class CustomerRepository(BaseRepository[Customer]):
         )
         result = await self.session.execute(stmt)
         return result.scalars().first()
+
+    async def list_customers(
+        self,
+        plan: str | None = None,
+        offset: int = 0,
+        limit: int = 50,
+    ) -> tuple[list[Customer], int]:
+        """Fetch a paginated list of customers optionally filtered by plan."""
+        from sqlalchemy import func
+
+        base_stmt = select(Customer)
+        count_stmt = select(func.count()).select_from(Customer)
+
+        if plan is not None:
+            base_stmt = base_stmt.where(Customer.plan == plan)
+            count_stmt = count_stmt.where(Customer.plan == plan)
+
+        total_res = await self.session.execute(count_stmt)
+        total = total_res.scalar_one() or 0
+
+        base_stmt = (
+            base_stmt.order_by(Customer.created_at.desc()).offset(offset).limit(limit)
+        )
+        items_res = await self.session.execute(base_stmt)
+        items = list(items_res.scalars().all())
+
+        return items, total
 
 
 class WorkspaceRepository(BaseRepository[Workspace]):
