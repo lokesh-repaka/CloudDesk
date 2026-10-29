@@ -127,15 +127,15 @@ Cases live in `datasets/eval_cases.json` and each case needs a valid `expected_c
 
 Update each row in place. Do not mark a row done from intention.
 
-| Surface | State on 2026-10-28 |
+| Surface | State on 2026-10-29 |
 |---|---|
-| Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md)) organized in `docs/`. Backend core settings, JSON logging, health routes, request-id middleware, CORS, offline test harness, Makefile, `.env.example`, domain schemas, SQLAlchemy 2.0 models, PostgreSQL DDL/RLS/migrations, async database core, repository layer, sample dataset fixtures (`sample_data/`), `database/seed.sql`, and demo bootstrap service in place. |
-| Implemented | Phase 1 (Runtime skeleton), Phase 2 (Persistence and demo data), and Phase 3 (Identity and request guards: P3-1, P3-2, P3-3, P3-4) complete. Implemented `AuditMiddleware` logging state-changing requests (POST, PUT, PATCH, DELETE) to `audit_logs` table while strictly excluding safe read methods (GET, HEAD, OPTIONS); enforced architectural middleware pipeline order: CORS (outermost) -> RequestId -> RateLimit -> Audit (innermost). |
-| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, `tests/unit/test_offline_harness.py`, `tests/deployment/test_env_example.py`, `tests/unit/test_entities.py`, `tests/unit/test_postgres_schema.py`, `tests/unit/test_repositories.py`, `tests/unit/test_seed_service.py`, `tests/unit/test_security.py`, `tests/api/test_auth.py`, `tests/unit/test_redis.py`, `tests/unit/test_rate_limit.py`, and `tests/unit/test_audit_middleware.py`: 133 passed on this machine. `make lint` clean. |
+| Repository contents | Core documentation ([CLAUDE.md](CLAUDE.md), [PLAN.md](PLAN.md), [SKILLS.md](SKILLS.md), [TASKS.md](TASKS.md), [API_CONTRACT.md](API_CONTRACT.md)) organized in `docs/`. Backend core settings, JSON logging, health routes, request-id middleware, CORS, offline test harness, Makefile, `.env.example`, domain schemas (`backend/app/schemas/`), SQLAlchemy 2.0 models, PostgreSQL DDL/RLS/migrations, async database core, repository layer, sample dataset fixtures (`sample_data/`), `database/seed.sql`, demo bootstrap service, and TypeScript type interfaces (`frontend/lib/types.ts`) in place. |
+| Implemented | Phase 1 (Runtime skeleton), Phase 2 (Persistence and demo data), Phase 3 (Identity and request guards), and Phase 4 Task P4-1 (Ticket and customer API contract) complete. Established authoritative written API contract (`docs/API_CONTRACT.md`) defining all endpoints, status codes, error envelopes, and RBAC rules; implemented strict Pydantic v2 schemas in `backend/app/schemas/tickets.py` and `customers.py` with field boundaries, mass-assignment guards (`extra="forbid"`), and enum validation; synchronized TypeScript types in `frontend/lib/types.ts`. |
+| Validated locally | `tests/unit/test_config_logging.py`, `tests/api/test_health.py`, `tests/unit/test_offline_harness.py`, `tests/deployment/test_env_example.py`, `tests/unit/test_entities.py`, `tests/unit/test_postgres_schema.py`, `tests/unit/test_repositories.py`, `tests/unit/test_seed_service.py`, `tests/unit/test_security.py`, `tests/api/test_auth.py`, `tests/unit/test_redis.py`, `tests/unit/test_rate_limit.py`, `tests/unit/test_audit_middleware.py`, and `tests/unit/test_schemas_contract.py`: 162 passed on this machine. `make lint` / `ruff` clean. |
 | Cloud credentials | None used. |
 | Applied to a real account | Nothing. |
 | GitHub Actions | Workflow `.github/workflows/test.yml` active with ruff linter and pytest suite. |
-| Phase plan | Phase 1, Phase 2, and Phase 3 complete; unblocks Phase 4 (Support API). |
+| Phase plan | Phase 1, Phase 2, Phase 3, and P4-1 complete; unblocks P4-2 (Ticket API), P4-3 (Customer API), and Phase 12 (Console shell). |
 
 ## Open questions from `CLAUDE.md` §20
 
