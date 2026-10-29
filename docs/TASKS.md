@@ -60,7 +60,7 @@ Sub-tasks in the same phase that do not share files can be open at the same time
 | Task | Branch | Status |
 |------|--------|--------|
 | P4-1 · Ticket and customer API contract | `feature/api-contract-docs` | Completed ✅ |
-| P4-2 · Ticket API | `feature/api-tickets` | Pending ❌ |
+| P4-2 · Ticket API | `feature/api-tickets` | Completed ✅ |
 | P4-3 · Customer API | `feature/api-customers` | Pending ❌ |
 
 ---
