@@ -255,3 +255,45 @@ export interface CustomerDetail extends CustomerSummary {
   recent_tickets: TicketSummary[];
   memory_notes: CustomerMemory[];
 }
+
+// ----------------------------------------------------------------------------
+// Knowledge Base Types (P5-4 / API_CONTRACT.md §5.2)
+// ----------------------------------------------------------------------------
+
+export interface KnowledgeSearchRequest {
+  query: string;
+  category?: Category | null;
+  top_k?: number;
+  mode?: "hybrid" | "semantic" | "keyword";
+}
+
+export interface KnowledgeEvidence {
+  id: string;
+  title: string;
+  source: string;
+  snippet: string;
+  score: number;
+  url: string;
+  article_id: string;
+}
+
+export interface KnowledgeReindexResponse {
+  indexed_articles: number;
+  total_chunks: number;
+}
+
+export interface KnowledgeArticleSummary {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  tags: string[];
+  summary: string;
+  url: string;
+}
+
+export interface KnowledgeArticleDetail extends KnowledgeArticleSummary {
+  content: string;
+  file_path?: string | null;
+}
+

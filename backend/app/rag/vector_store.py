@@ -406,24 +406,42 @@ class QdrantVectorStore:
 # 6. Factory Function
 # -----------------------------------------------------------------------------
 
+_vector_store_instance: VectorStoreService | None = None
+
 
 def get_vector_store(
     settings: Settings | None = None,
     embeddings: EmbeddingsService | None = None,
+    force_new: bool = False,
 ) -> VectorStoreService:
     """Instantiate and return the configured VectorStoreService implementation.
 
     Selected by VECTOR_STORE setting: 'memory' -> InMemoryVectorStore, 'qdrant' -> QdrantVectorStore.
+    Reuses active singleton when default settings and embeddings are used.
     """
+    global _vector_store_instance
+    if (
+        settings is None
+        and embeddings is None
+        and not force_new
+        and _vector_store_instance is not None
+    ):
+        return _vector_store_instance
+
     cfg = settings or get_settings()
     emb = embeddings or FakeEmbeddings(dimensions=cfg.EMBEDDING_DIMENSIONS)
 
     if cfg.VECTOR_STORE.strip().lower() == "qdrant" and cfg.QDRANT_URL:
-        return QdrantVectorStore(
+        store: VectorStoreService = QdrantVectorStore(
             url=cfg.QDRANT_URL,
             api_key=cfg.QDRANT_API_KEY,
             collection_name=cfg.QDRANT_COLLECTION,
             embeddings=emb,
         )
+    else:
+        store = InMemoryVectorStore(embeddings=emb)
 
-    return InMemoryVectorStore(embeddings=emb)
+    if settings is None and embeddings is None:
+        _vector_store_instance = store
+
+    return store

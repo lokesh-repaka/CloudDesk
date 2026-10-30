@@ -31,6 +31,13 @@ from backend.app.schemas.customers import (
     SubscriptionResponse,
     WorkspaceResponse,
 )
+from backend.app.schemas.knowledge import (
+    KnowledgeArticleDetail,
+    KnowledgeArticleSummary,
+    KnowledgeEvidenceResponse,
+    KnowledgeReindexResponse,
+    KnowledgeSearchRequest,
+)
 from backend.app.schemas.tickets import (
     EscalateRequest,
     EscalateResponse,
@@ -66,6 +73,11 @@ __all__ = [
     "EscalateRequest",
     "EscalateResponse",
     "EscalationStatusEnum",
+    "KnowledgeArticleDetail",
+    "KnowledgeArticleSummary",
+    "KnowledgeEvidenceResponse",
+    "KnowledgeReindexResponse",
+    "KnowledgeSearchRequest",
     "LoginRequest",
     "MemoryTypeEnum",
     "ReplyCreate",
