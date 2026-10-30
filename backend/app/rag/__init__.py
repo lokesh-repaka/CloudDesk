@@ -13,6 +13,7 @@ from backend.app.rag.chunking import (
     load_article_files,
     slugify_heading,
 )
+from backend.app.rag.retriever import HybridRetriever
 from backend.app.rag.vector_store import (
     EmbeddingsService,
     FakeEmbeddings,
@@ -29,6 +30,7 @@ __all__ = [
     "ArticleDocument",
     "EmbeddingsService",
     "FakeEmbeddings",
+    "HybridRetriever",
     "InMemoryVectorStore",
     "QdrantVectorStore",
     "VectorDocument",

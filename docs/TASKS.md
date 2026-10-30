@@ -74,7 +74,7 @@ Sub-tasks in the same phase that do not share files can be open at the same time
 |------|--------|--------|
 | P5-1 · Knowledge articles and chunking | `feature/rag-chunking` | Completed ✅ |
 | P5-2 · Vector store and fake embeddings | `feature/rag-vector-store` | Completed ✅ |
-| P5-3 · Hybrid retriever | `feature/rag-hybrid-retriever` | Pending ❌ |
+| P5-3 · Hybrid retriever | `feature/rag-hybrid-retriever` | Completed ✅ |
 | P5-4 · Ingest command and knowledge API | `feature/rag-ingest-api` | Pending ❌ |
 
 ---
