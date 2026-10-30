@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.app.api import auth, customers, health, tickets
+from backend.app.api import auth, customers, health, knowledge, tickets
 from backend.app.core.config import get_settings
 from backend.app.core.logging import setup_logging
 from backend.app.middleware.request_id import RequestIdMiddleware
@@ -16,10 +16,12 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     if settings.DEMO_MODE:
         from backend.app.core.database import create_tables
+        from backend.app.rag.ingest import ingest_knowledge_base
         from backend.app.services.seed_service import bootstrap_demo_data
 
         await create_tables()
         await bootstrap_demo_data()
+        await ingest_knowledge_base()
     yield
     from backend.app.core.database import dispose_engine
     from backend.app.core.redis import close_redis_client
@@ -70,6 +72,7 @@ def create_application() -> FastAPI:
     app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
     app.include_router(tickets.router, prefix="/api/v1/tickets", tags=["tickets"])
     app.include_router(customers.router, prefix="/api/v1/customers", tags=["customers"])
+    app.include_router(knowledge.router, prefix="/api/v1/knowledge", tags=["knowledge"])
 
     return app
 

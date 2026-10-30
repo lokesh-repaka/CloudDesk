@@ -42,7 +42,7 @@ seed:
 	@echo "Database seed stub (Active in Phase 2)"
 
 ingest:
-	@echo "Knowledge ingest stub (Active in Phase 5)"
+	$(PYTHON) -m backend.app.rag.ingest
 
 mcp:
 	@echo "MCP server stub (Active in Phase 6)"

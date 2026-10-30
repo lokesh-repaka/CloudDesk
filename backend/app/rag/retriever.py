@@ -312,3 +312,44 @@ class HybridRetriever:
             results.append(evidence)
 
         return results
+
+
+_retriever_instance: HybridRetriever | None = None
+
+
+def get_retriever(force_reinit: bool = False) -> HybridRetriever:
+    """Return active HybridRetriever singleton.
+
+    If not initialized or force_reinit=True, creates a new instance.
+    If no chunks are currently indexed in memory, attempts to load and index
+    chunks from the default knowledge base directory.
+    """
+    global _retriever_instance
+    if _retriever_instance is None or force_reinit:
+        _retriever_instance = HybridRetriever()
+
+    if not _retriever_instance.chunks:
+        try:
+            from pathlib import Path
+
+            from backend.app.rag.chunking import chunk_all_articles, load_article_files
+
+            kb_path = Path("sample_data/knowledge_base")
+            if kb_path.is_dir():
+                articles = load_article_files(kb_path)
+                chunks = chunk_all_articles(articles)
+                _retriever_instance.build_bm25_index(chunks)
+                store = _retriever_instance.vector_store
+                if hasattr(store, "documents") and not store.documents:
+                    import asyncio
+
+                    try:
+                        loop = asyncio.get_running_loop()
+                        loop.create_task(store.add_documents(chunks))
+                    except RuntimeError:
+                        asyncio.run(store.add_documents(chunks))
+        except (OSError, ValueError) as err:
+            logger.warning("Auto-loading default knowledge base corpus failed: %s", err)
+
+    return _retriever_instance
+
