@@ -14,6 +14,8 @@ from agents.prompts import (
 )
 from agents.rules import (
     ESCALATION_RULES,
+    REDACTION_MARKER,
+    SECRET_PATTERNS,
     SECURITY_PREAMBLE,
     EscalationDecision,
     EscalationRule,
@@ -25,6 +27,7 @@ from agents.rules import (
     rule_category,
     rule_severity,
     scan_for_injection,
+    scrub,
     validate_customer_output,
     wrap_untrusted,
 )
@@ -34,7 +37,9 @@ __all__ = [
     "ESCALATION_RULES",
     "ESCALATION_SYSTEM_PROMPT",
     "KNOWLEDGE_AGENT_SYSTEM_PROMPT",
+    "REDACTION_MARKER",
     "RESOLUTION_SYSTEM_PROMPT",
+    "SECRET_PATTERNS",
     "SECURITY_PREAMBLE",
     "SUPERVISOR_SYSTEM_PROMPT",
     "TROUBLESHOOTING_SYSTEM_PROMPT",
@@ -49,6 +54,7 @@ __all__ = [
     "rule_category",
     "rule_severity",
     "scan_for_injection",
+    "scrub",
     "validate_customer_output",
     "wrap_untrusted",
 ]

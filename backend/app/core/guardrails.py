@@ -518,3 +518,206 @@ def validate_customer_output(
         failure_reason=failure_reason,
         violations=violations,
     )
+
+
+# ---------------------------------------------------------------------------
+# Sensitive Data Scrubbing (US-022, AC-070, AC-071, N7)
+# ---------------------------------------------------------------------------
+
+REDACTION_MARKER: str = "***REDACTED***"
+
+SECRET_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+    (
+        "ai_api_key",
+        re.compile(r"\bsk-(?:proj-|ant-)?[a-zA-Z0-9_-]{20,}\b"),
+    ),
+    (
+        "github_token",
+        re.compile(
+            r"\b(?:ghp|gho|ghu|ghs|ghr)_[a-zA-Z0-9]{36}\b|\bgithub_pat_[a-zA-Z0-9_]{40,}\b"
+        ),
+    ),
+    (
+        "aws_access_key",
+        re.compile(r"\b(?:AKIA|ABIA|ACCA|ASIA)[0-9A-Z]{16}\b"),
+    ),
+    (
+        "bearer_token",
+        re.compile(r"(?i)\bBearer\s+[a-zA-Z0-9_\.\-/+=]{20,}\b"),
+    ),
+    (
+        "jwt_token",
+        re.compile(
+            r"\beyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\b"
+        ),
+    ),
+    (
+        "plaintext_password",
+        re.compile(r"(?i)\bpassword\s*([:=])\s*(\S+)"),
+    ),
+    (
+        "db_connection_url_with_password",
+        re.compile(
+            r"(?i)\b((?:postgresql|postgres|mysql|redis)://[a-zA-Z0-9_-]+:)([^@\s]+)(@[a-zA-Z0-9_\.-]+)"
+        ),
+    ),
+    (
+        "api_key_assignment",
+        re.compile(r"(?i)\b(api[_-]?key\s*[:=]\s*)[a-zA-Z0-9_-]{16,}\b"),
+    ),
+]
+
+_EMAIL_HEADER_RE = re.compile(r"(?im)^(?:From|To|Subject|Date|Sent):\s+.*")
+_CHAT_ROLE_RE = re.compile(r"(?im)^(?:Customer|User|Agent|Support|Client):\s+.*")
+
+
+class ScrubResult(BaseModel):
+    """Result of scrubbing sensitive credentials from customer memory notes."""
+
+    scrubbed_text: str = Field(
+        ..., description="Sanitized text with all secrets replaced by ***REDACTED***"
+    )
+    redacted_count: int = Field(
+        default=0, description="Total count of redacted secret tokens"
+    )
+    detected_secret_types: list[str] = Field(
+        default_factory=list, description="Categories of detected secret tokens"
+    )
+
+
+def is_raw_ticket_body(text: str | None) -> bool:
+    """Detect whether text is a raw unparsed conversation/email body (AC-071).
+
+    Checks for unparsed email headers (From:, To:, Subject:, Date:) or multi-party
+    chat transcripts (Customer:, Agent:) to ensure memory notes are structured.
+    """
+    if not text:
+        return False
+    header_matches = _EMAIL_HEADER_RE.findall(text)
+    if len(header_matches) >= 2:
+        return True
+    chat_matches = _CHAT_ROLE_RE.findall(text)
+    return len(chat_matches) >= 2
+
+
+def validate_memory_content(text: str | None) -> bool:
+    """Validate that note content is suitable for customer memory storage (AC-071).
+
+    Ensures content is non-empty and contains structured troubleshooting findings
+    rather than a raw ticket or conversation dump.
+    """
+    if not text or not text.strip():
+        return False
+    return not is_raw_ticket_body(text)
+
+
+def scrub_text(text: str | None) -> ScrubResult:
+    """Scrub payment cards, API keys, passwords, and tokens from text (N7, AC-070).
+
+    Returns a ScrubResult containing the sanitized text, count of redacted items,
+    and categories of detected secrets.
+    """
+    if text is None:
+        return ScrubResult(scrubbed_text="", redacted_count=0, detected_secret_types=[])
+
+    if not text:
+        return ScrubResult(scrubbed_text="", redacted_count=0, detected_secret_types=[])
+
+    current_text = text
+    total_redactions = 0
+    detected_types: list[str] = []
+
+    # 1. Credit card PANs with Luhn verification
+    card_pattern = re.compile(r"\b(?:\d{4}[ -]?){3}\d{1,4}\b|\b\d{13,19}\b")
+    card_count = 0
+
+    def _sub_card(m: re.Match[str]) -> str:
+        nonlocal card_count
+        val = m.group(0)
+        if _is_luhn_valid(val):
+            card_count += 1
+            return REDACTION_MARKER
+        return val
+
+    current_text = card_pattern.sub(_sub_card, current_text)
+    if card_count > 0:
+        total_redactions += card_count
+        detected_types.append("credit_card")
+
+    # 2. Database connection URLs with passwords
+    db_count = 0
+
+    def _sub_db(m: re.Match[str]) -> str:
+        nonlocal db_count
+        db_count += 1
+        return f"{m.group(1)}{REDACTION_MARKER}{m.group(3)}"
+
+    db_re = re.compile(
+        r"(?i)\b((?:postgresql|postgres|mysql|redis)://[a-zA-Z0-9_-]+:)([^@\s]+)(@[a-zA-Z0-9_\.-]+)"
+    )
+    current_text = db_re.sub(_sub_db, current_text)
+    if db_count > 0:
+        total_redactions += db_count
+        detected_types.append("db_password")
+
+    # 3. Plaintext password fields (preserve label)
+    pw_count = 0
+
+    def _sub_pw(m: re.Match[str]) -> str:
+        nonlocal pw_count
+        pw_count += 1
+        sep = m.group(1)
+        has_space = " " in m.group(0)[len("password") : m.start(2) - m.start(0)]
+        space = " " if has_space else ""
+        return f"password{sep}{space}{REDACTION_MARKER}"
+
+    pw_re = re.compile(r"(?i)\bpassword\s*([:=])\s*(\S+)")
+    current_text = pw_re.sub(_sub_pw, current_text)
+    if pw_count > 0:
+        total_redactions += pw_count
+        detected_types.append("plaintext_password")
+
+    # 4. Bearer tokens
+    bearer_count = 0
+
+    def _sub_bearer(m: re.Match[str]) -> str:
+        nonlocal bearer_count
+        bearer_count += 1
+        return f"Bearer {REDACTION_MARKER}"
+
+    bearer_re = re.compile(r"(?i)\bBearer\s+[a-zA-Z0-9_\.\-/+=]{20,}\b")
+    current_text = bearer_re.sub(_sub_bearer, current_text)
+    if bearer_count > 0:
+        total_redactions += bearer_count
+        detected_types.append("bearer_token")
+
+    # 5. Direct secret regex patterns
+    for pattern_name, pattern_re in SECRET_PATTERNS:
+        if pattern_name in (
+            "plaintext_password",
+            "db_connection_url_with_password",
+            "bearer_token",
+        ):
+            continue
+
+        matches = pattern_re.findall(current_text)
+        if matches:
+            total_redactions += len(matches)
+            detected_types.append(pattern_name)
+            current_text = pattern_re.sub(REDACTION_MARKER, current_text)
+
+    return ScrubResult(
+        scrubbed_text=current_text,
+        redacted_count=total_redactions,
+        detected_secret_types=detected_types,
+    )
+
+
+def scrub(text: str | None) -> str:
+    """Scrub sensitive credentials, API keys, passwords, and cards from text (N7, AC-070).
+
+    Replaces all sensitive patterns with '***REDACTED***' prior to database insertion.
+    """
+    if text is None:
+        return ""
+    return scrub_text(text).scrubbed_text
