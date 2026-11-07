@@ -14,6 +14,7 @@ import logging
 from collections.abc import Sequence
 from typing import Any
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.database import get_session_factory
@@ -92,9 +93,16 @@ class MemoryService:
 
         # Standalone transaction fallback
         session_factory = get_session_factory()
-        async with session_factory() as sess:
-            ltm = LongTermMemory(session=sess)
-            return await ltm.get_notes(customer_id.strip(), limit=limit)
+        try:
+            async with session_factory() as sess:
+                ltm = LongTermMemory(session=sess)
+                return await ltm.get_notes(customer_id.strip(), limit=limit)
+        except (SQLAlchemyError, RuntimeError, OSError) as err:
+            logger.debug(
+                "Database query for memory notes failed (%s); returning empty notes",
+                err,
+            )
+            return []
 
     # =========================================================================
     # 2. High-Level Record Resolution (memory_update node integration, F11, AC-050)

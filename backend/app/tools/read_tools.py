@@ -111,8 +111,65 @@ async def get_customer(
         return await _fetch(session)
 
     session_factory = get_session_factory()
-    async with session_factory() as local_session:
-        return await _fetch(local_session)
+    try:
+        async with session_factory() as local_session:
+            return await _fetch(local_session)
+    except (SQLAlchemyError, RuntimeError) as err:
+        logger.debug(
+            "Database query for customer failed (%s); falling back to sample data",
+            err,
+        )
+
+    # Fallback to sample_data/customers.json for demo and offline test environments
+    settings = get_settings()
+    sample_customers = Path(settings.SAMPLE_DATA_DIR) / "customers.json"
+    if sample_customers.exists():
+        try:
+            customers = json.loads(sample_customers.read_text(encoding="utf-8"))
+            matched = None
+            for c in customers:
+                if customer_id and c.get("id") == customer_id:
+                    matched = c
+                    break
+                if email and c.get("email", "").lower() == email.strip().lower():
+                    matched = c
+                    break
+            if matched:
+                ws_file = Path(settings.SAMPLE_DATA_DIR) / "workspaces.json"
+                workspaces = []
+                if ws_file.exists():
+                    all_ws = json.loads(ws_file.read_text(encoding="utf-8"))
+                    workspaces = [
+                        w for w in all_ws if w.get("customer_id") == matched["id"]
+                    ]
+                sub_file = Path(settings.SAMPLE_DATA_DIR) / "subscriptions.json"
+                active_sub = None
+                if sub_file.exists():
+                    all_subs = json.loads(sub_file.read_text(encoding="utf-8"))
+                    for sub in all_subs:
+                        if (
+                            sub.get("customer_id") == matched["id"]
+                            and sub.get("status") == "active"
+                        ):
+                            active_sub = sub
+                            break
+                return {
+                    "id": matched["id"],
+                    "name": matched["name"],
+                    "email": matched["email"],
+                    "plan": (
+                        active_sub.get("plan")
+                        if active_sub
+                        else matched.get("plan", "free")
+                    ),
+                    "created_at": None,
+                    "workspaces": workspaces,
+                    "active_subscription": active_sub,
+                }
+        except (json.JSONDecodeError, OSError) as err:
+            logger.debug("Failed reading sample customers: %s", err)
+
+    return None
 
 
 @tool(
@@ -148,8 +205,35 @@ async def get_subscription(
         return await _fetch(session)
 
     session_factory = get_session_factory()
-    async with session_factory() as local_session:
-        return await _fetch(local_session)
+    try:
+        async with session_factory() as local_session:
+            return await _fetch(local_session)
+    except (SQLAlchemyError, RuntimeError) as err:
+        logger.debug(
+            "Database query for subscription failed (%s); falling back to sample data",
+            err,
+        )
+
+    # Fallback to sample_data/subscriptions.json for demo and offline test environments
+    settings = get_settings()
+    sub_file = Path(settings.SAMPLE_DATA_DIR) / "subscriptions.json"
+    if sub_file.exists():
+        try:
+            subs = json.loads(sub_file.read_text(encoding="utf-8"))
+            for s in subs:
+                if s.get("customer_id") == customer_id and s.get("status") == "active":
+                    return {
+                        "id": s["id"],
+                        "customer_id": s["customer_id"],
+                        "plan": s["plan"],
+                        "status": s["status"],
+                        "seats": s.get("seats", 1),
+                        "current_period_end": s.get("current_period_end"),
+                    }
+        except (json.JSONDecodeError, OSError) as err:
+            logger.debug("Failed reading sample subscriptions: %s", err)
+
+    return None
 
 
 @tool(
@@ -188,8 +272,39 @@ async def get_ticket_history(
         return await _fetch(session)
 
     session_factory = get_session_factory()
-    async with session_factory() as local_session:
-        return await _fetch(local_session)
+    try:
+        async with session_factory() as local_session:
+            return await _fetch(local_session)
+    except (SQLAlchemyError, RuntimeError) as err:
+        logger.debug(
+            "Database query for ticket history failed (%s); falling back to sample data",
+            err,
+        )
+
+    # Fallback to sample_data/tickets.json for demo and offline test environments
+    settings = get_settings()
+    t_file = Path(settings.SAMPLE_DATA_DIR) / "tickets.json"
+    if t_file.exists():
+        try:
+            all_tickets = json.loads(t_file.read_text(encoding="utf-8"))
+            matched_tickets = [
+                {
+                    "id": t["id"],
+                    "subject": t["subject"],
+                    "status": t["status"],
+                    "severity": t.get("severity", "medium"),
+                    "category": t.get("category", "other"),
+                    "channel": t.get("channel", "web"),
+                    "created_at": t.get("created_at"),
+                }
+                for t in all_tickets
+                if t.get("customer_id") == customer_id
+            ]
+            return matched_tickets[:safe_limit]
+        except (json.JSONDecodeError, OSError) as err:
+            logger.debug("Failed reading sample tickets: %s", err)
+
+    return []
 
 
 @tool(
