@@ -27,3 +27,4 @@ cd "$TF_DIR"
 terraform apply -var-file="$TFVARS_FILE" -var="image_tag=$TARGET_SHA"
 
 echo "==> Rollback to $TARGET_SHA completed successfully."
+

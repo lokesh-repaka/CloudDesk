@@ -14,3 +14,4 @@ variable "health_check_path" {
   type        = string
   default     = "/health/live"
 }
+

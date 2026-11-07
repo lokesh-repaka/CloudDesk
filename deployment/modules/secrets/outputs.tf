@@ -7,3 +7,4 @@ output "managed_secrets" {
   description = "Identifiers of managed secrets"
   value       = var.secret_names
 }
+

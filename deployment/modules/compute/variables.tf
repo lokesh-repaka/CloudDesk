@@ -26,3 +26,4 @@ variable "memory" {
   type        = string
   default     = "1024"
 }
+

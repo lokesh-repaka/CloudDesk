@@ -7,3 +7,4 @@ output "acr_login_server" {
   description = "Azure Container Registry login server"
   value       = module.container_registry.backend_repository
 }
+

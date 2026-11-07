@@ -14,3 +14,4 @@ variable "node_type" {
   type        = string
   default     = "cache.t4g.micro"
 }
+

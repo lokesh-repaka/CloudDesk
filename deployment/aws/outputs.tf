@@ -12,3 +12,4 @@ output "frontend_repository_url" {
   description = "AWS ECR frontend repository URL"
   value       = module.container_registry.frontend_repository
 }
+

@@ -14,3 +14,4 @@ variable "secret_names" {
   type        = list(string)
   default     = ["jwt_secret", "database_password", "redis_password"]
 }
+

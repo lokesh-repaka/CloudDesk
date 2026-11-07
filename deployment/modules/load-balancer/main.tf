@@ -10,3 +10,4 @@ terraform {
 locals {
   alb_name = "${var.project_name}-${var.environment}-alb"
 }
+

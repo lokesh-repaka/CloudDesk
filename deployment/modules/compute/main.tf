@@ -11,3 +11,4 @@ locals {
   backend_service_name  = "${var.project_name}-${var.environment}-backend-svc"
   frontend_service_name = "${var.project_name}-${var.environment}-frontend-svc"
 }
+

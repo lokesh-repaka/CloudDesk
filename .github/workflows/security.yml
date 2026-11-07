@@ -74,3 +74,4 @@ jobs:
           directory: "deployment"
           framework: "terraform"
           soft_fail: true
+

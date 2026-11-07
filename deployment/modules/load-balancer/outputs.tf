@@ -7,3 +7,4 @@ output "health_check_path" {
   description = "Configured health check path"
   value       = var.health_check_path
 }
+

@@ -7,3 +7,4 @@ output "node_type" {
   description = "Redis node type"
   value       = var.node_type
 }
+

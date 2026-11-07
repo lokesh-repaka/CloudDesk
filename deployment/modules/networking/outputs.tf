@@ -7,3 +7,4 @@ output "cidr_block" {
   description = "Assigned CIDR block"
   value       = var.cidr_block
 }
+

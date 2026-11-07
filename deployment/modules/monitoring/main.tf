@@ -10,3 +10,4 @@ terraform {
 locals {
   log_group_name = "/clouddesk/${var.environment}/logs"
 }
+

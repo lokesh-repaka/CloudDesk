@@ -39,3 +39,4 @@ else
 fi
 
 echo "==> Infrastructure destruction completed for $CLOUD ($ENV)."
+

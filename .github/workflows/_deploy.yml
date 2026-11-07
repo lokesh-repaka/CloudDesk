@@ -104,3 +104,4 @@ jobs:
         run: |
           chmod +x deployment/scripts/smoke_test.sh
           deployment/scripts/smoke_test.sh "${{ inputs.cloud }}" "${{ inputs.environment }}"
+

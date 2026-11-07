@@ -37,3 +37,4 @@ jobs:
           push: false
           tags: clouddesk-frontend:${{ github.sha }}
           load: true
+

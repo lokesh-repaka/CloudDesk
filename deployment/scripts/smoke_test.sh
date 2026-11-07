@@ -33,3 +33,4 @@ curl -sf "$ENDPOINT/health" || {
 }
 
 echo "==> All smoke tests passed successfully for $CLOUD ($ENV)."
+

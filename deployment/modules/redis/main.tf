@@ -10,3 +10,4 @@ terraform {
 locals {
   redis_cluster_id = "${var.project_name}-${var.environment}-redis"
 }
+

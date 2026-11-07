@@ -7,3 +7,4 @@ output "frontend_service" {
   description = "Frontend compute service name"
   value       = local.frontend_service_name
 }
+

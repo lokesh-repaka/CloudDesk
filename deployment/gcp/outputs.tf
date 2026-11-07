@@ -7,3 +7,4 @@ output "artifact_registry_repository" {
   description = "GCP Artifact Registry repository identifier"
   value       = module.container_registry.backend_repository
 }
+

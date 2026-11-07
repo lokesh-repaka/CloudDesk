@@ -11,3 +11,4 @@ locals {
   backend_repo_name  = "${var.project_name}-${var.environment}-backend"
   frontend_repo_name = "${var.project_name}-${var.environment}-frontend"
 }
+

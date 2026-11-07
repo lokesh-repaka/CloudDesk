@@ -29,3 +29,4 @@ echo "==> Building frontend image..."
 docker build -f "$ROOT_DIR/frontend/Dockerfile" -t "clouddesk-frontend:$GIT_SHA" "$ROOT_DIR/frontend"
 
 echo "==> Container images built successfully with git SHA tag: $GIT_SHA"
+

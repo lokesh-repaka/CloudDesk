@@ -39,3 +39,4 @@ jobs:
 
       - name: Validate Terraform configuration
         run: terraform -chdir=deployment/${{ matrix.cloud }} validate
+

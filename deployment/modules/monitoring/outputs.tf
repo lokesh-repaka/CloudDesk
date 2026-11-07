@@ -7,3 +7,4 @@ output "retention_days" {
   description = "Configured retention days"
   value       = var.retention_in_days
 }
+

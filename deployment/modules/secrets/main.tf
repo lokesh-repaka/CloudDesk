@@ -11,3 +11,4 @@ terraform {
 locals {
   secret_vault_name = "${var.project_name}-${var.environment}-secrets"
 }
+

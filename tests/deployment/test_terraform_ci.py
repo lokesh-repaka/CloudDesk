@@ -207,3 +207,4 @@ def test_security_cwe_200_no_secrets_in_terraform_or_ci():
                 assert not re.search(r"password\s*=\s*[\"'][^\"'$]{8,}[\"']", content, re.IGNORECASE), (
                     f"Potential hardcoded password found in {file_path}"
                 )
+

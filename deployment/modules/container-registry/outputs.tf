@@ -7,3 +7,4 @@ output "frontend_repository" {
   description = "Frontend container repository identifier"
   value       = local.frontend_repo_name
 }
+

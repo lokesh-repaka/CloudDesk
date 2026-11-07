@@ -11,3 +11,4 @@ terraform {
 locals {
   network_name = "${var.project_name}-${var.environment}-net"
 }
+
