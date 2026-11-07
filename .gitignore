@@ -34,11 +34,18 @@ docs/design.md
 docs/prompts/
 prompts/
 
-# Terraform remote state and caches (CLAUDE.md §15)
+# Terraform remote state, plans and caches (CLAUDE.md §15, §18)
 .terraform/
 *.tfstate
 *.tfstate.*
+*.tfplan
+tfplan
 backend.hcl
 *.backend.hcl
+
+# SQLite and checkpoint databases (CLAUDE.md §18)
+*.db
+*.sqlite
+*.sqlite3
 
 

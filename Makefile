@@ -1,4 +1,4 @@
-.PHONY: help setup test lint backend demo seed ingest mcp smoke clean
+.PHONY: help setup test lint backend demo seed ingest mcp terraform-validate smoke clean
 
 # Default target when running 'make'
 .DEFAULT_GOAL := help
@@ -45,6 +45,14 @@ ingest:
 
 mcp:
 	$(PYTHON) -m integrations.mcp.server
+
+terraform-validate:
+	@echo "Validating multi-cloud Terraform roots..."
+	@which terraform >/dev/null 2>&1 || { echo "terraform not installed locally, skipping local execution"; exit 0; }
+	@for cloud in aws azure gcp; do \
+		echo "Validating deployment/$$cloud..."; \
+		(cd deployment/$$cloud && terraform fmt -check && terraform init -backend=false && terraform validate) || exit 1; \
+	done
 
 smoke:
 	@echo "Checking health endpoint at $${BASE_URL:-http://localhost:8000}/health/live"
