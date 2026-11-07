@@ -92,6 +92,9 @@ class EscalationAgent:
         elif isinstance(customer_context, dict):
             customer_plan = str(customer_context.get("plan", ""))
 
+        if not customer_plan and plan_name:
+            customer_plan = str(plan_name)
+
         # 3. Deterministic policy rule evaluation (AC-043)
         matched_rules = matching_escalation_rules(
             text=bounded_text,
