@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { Header, HeaderUser } from "./Header";
 import { Role } from "@/lib/types";
+import { useAuth } from "@/lib/auth";
+import { AlertTriangleIcon } from "./Icons";
 
 export interface AppShellProps {
   children: React.ReactNode;
@@ -15,16 +17,20 @@ export interface AppShellProps {
 export function AppShell({
   children,
   pageTitle,
-  userRole = "agent",
+  userRole: propUserRole,
   backendStatus = "online",
 }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const { user, role: authRole, logout } = useAuth();
+
+  const effectiveRole: Role = propUserRole || authRole || "agent";
+
   const currentUser: HeaderUser = {
-    name: "Alex Rivera",
-    email: "alex.rivera@clouddesk.dev",
-    role: userRole,
+    name: user?.full_name || (effectiveRole === "admin" ? "Alice Admin" : effectiveRole === "agent" ? "Sam Agent" : "Vic Viewer"),
+    email: user?.email || `${effectiveRole}@clouddesk.demo`,
+    role: effectiveRole,
   };
 
   const badgeCounts = {
@@ -37,7 +43,7 @@ export function AppShell({
     <div className="min-h-screen bg-slate-50 text-slate-900 flex">
       {/* Sidebar Navigation */}
       <Sidebar
-        userRole={userRole}
+        userRole={effectiveRole}
         collapsed={collapsed}
         onToggleCollapse={() => setCollapsed(!collapsed)}
         isOpenMobile={mobileOpen}
@@ -57,12 +63,20 @@ export function AppShell({
           user={currentUser}
           backendStatus={backendStatus}
           onToggleSidebar={() => setMobileOpen(true)}
-          onLogout={() => {
-            if (typeof window !== "undefined") {
-              window.location.href = "/login";
-            }
-          }}
+          onLogout={logout}
         />
+
+        {/* Read-Only Viewer Alert Banner (AC-054) */}
+        {effectiveRole === "viewer" && (
+          <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangleIcon size={14} className="text-amber-600 flex-shrink-0" />
+              <span>
+                <strong>Read-Only Mode (Viewer Role):</strong> Ticket workflow runs, customer replies, approval decisions, and escalations are disabled.
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Page Main Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
@@ -72,4 +86,3 @@ export function AppShell({
     </div>
   );
 }
-
