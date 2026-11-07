@@ -6,6 +6,10 @@ from backend.app.schemas.approvals import (
     ApproveDecisionRequest,
     RejectDecisionRequest,
 )
+from backend.app.schemas.escalations import (
+    EscalationResponse,
+    EscalationStatusUpdateRequest,
+)
 from backend.app.schemas.auth import (
     DemoTokensResponse,
     DemoTokenUser,
@@ -36,6 +40,10 @@ from backend.app.schemas.customers import (
     CustomerUpdate,
     SubscriptionResponse,
     WorkspaceResponse,
+)
+from backend.app.schemas.escalations import (
+    EscalationResponse,
+    EscalationStatusUpdateRequest,
 )
 from backend.app.schemas.knowledge import (
     KnowledgeArticleDetail,
@@ -98,7 +106,11 @@ __all__ = [
     "EscalateRequest",
     "EscalateResponse",
     "EscalationDecision",
+    "EscalationResponse",
+    "EscalationResponse",
+    "EscalationStatusUpdateRequest",
     "EscalationStatusEnum",
+    "EscalationStatusUpdateRequest",
     "Evidence",
     "KnowledgeArticleDetail",
     "KnowledgeArticleSummary",

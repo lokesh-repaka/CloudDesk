@@ -14,6 +14,7 @@ from backend.app.repositories.customer_repo import (
     CustomerRepository,
     WorkspaceRepository,
 )
+from backend.app.repositories.escalation_repo import EscalationRepository
 from backend.app.repositories.memory_repo import CustomerMemoryRepository
 from backend.app.repositories.ticket_repo import (
     TicketMessageRepository,
@@ -25,6 +26,7 @@ __all__ = [
     "BaseRepository",
     "CustomerMemoryRepository",
     "CustomerRepository",
+    "EscalationRepository",
     "TicketMessageRepository",
     "TicketRepository",
     "WorkspaceRepository",
