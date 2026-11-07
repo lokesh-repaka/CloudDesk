@@ -31,7 +31,10 @@ from backend.app.tools.registry import ToolRegistry, get_tool_registry
 logger = logging.getLogger(__name__)
 
 
-@tool(name="get_customer", description="Retrieve customer profile details by customer ID or email.")
+@tool(
+    name="get_customer",
+    description="Retrieve customer profile details by customer ID or email.",
+)
 async def get_customer(
     customer_id: str | None = None,
     email: str | None = None,
@@ -78,20 +81,28 @@ async def get_customer(
         workspaces_data = []
         if customer.workspaces:
             for ws in customer.workspaces:
-                workspaces_data.append({
-                    "id": ws.id,
-                    "name": ws.name,
-                    "slug": ws.slug,
-                    "storage_quota_bytes": ws.storage_quota_bytes,
-                    "storage_used_bytes": ws.storage_used_bytes,
-                })
+                limit_bytes = getattr(
+                    ws, "storage_limit_bytes", getattr(ws, "storage_quota_bytes", 0)
+                )
+                workspaces_data.append(
+                    {
+                        "id": ws.id,
+                        "name": ws.name,
+                        "slug": ws.slug,
+                        "storage_quota_bytes": limit_bytes,
+                        "storage_limit_bytes": limit_bytes,
+                        "storage_used_bytes": ws.storage_used_bytes,
+                    }
+                )
 
         return {
             "id": customer.id,
             "name": customer.name,
             "email": customer.email,
             "plan": customer.plan,
-            "created_at": customer.created_at.isoformat() if customer.created_at else None,
+            "created_at": customer.created_at.isoformat()
+            if customer.created_at
+            else None,
             "workspaces": workspaces_data,
             "active_subscription": active_sub,
         }
@@ -104,7 +115,10 @@ async def get_customer(
         return await _fetch(local_session)
 
 
-@tool(name="get_subscription", description="Retrieve active subscription and tier details for a customer.")
+@tool(
+    name="get_subscription",
+    description="Retrieve active subscription and tier details for a customer.",
+)
 async def get_subscription(
     customer_id: str,
     *,
@@ -138,7 +152,10 @@ async def get_subscription(
         return await _fetch(local_session)
 
 
-@tool(name="get_ticket_history", description="Retrieve past support tickets and statuses for a customer.")
+@tool(
+    name="get_ticket_history",
+    description="Retrieve past support tickets and statuses for a customer.",
+)
 async def get_ticket_history(
     customer_id: str,
     limit: int = 5,
@@ -175,7 +192,10 @@ async def get_ticket_history(
         return await _fetch(local_session)
 
 
-@tool(name="search_docs", description="Search the CloudDesk knowledge base using hybrid dense/sparse retrieval.")
+@tool(
+    name="search_docs",
+    description="Search the CloudDesk knowledge base using hybrid dense/sparse retrieval.",
+)
 async def search_docs(
     query: str,
     category: str | None = None,
@@ -235,14 +255,16 @@ async def check_service_status(
 
     if db_incidents:
         for inc in db_incidents:
-            active_incidents.append({
-                "id": inc.id,
-                "title": inc.title,
-                "service": inc.service,
-                "status": inc.status,
-                "severity": inc.severity,
-                "impact_summary": inc.impact_summary,
-            })
+            active_incidents.append(
+                {
+                    "id": inc.id,
+                    "title": inc.title,
+                    "service": inc.service,
+                    "status": inc.status,
+                    "severity": inc.severity,
+                    "impact_summary": inc.impact_summary,
+                }
+            )
     else:
         # Fallback to sample_data/incidents.json for demo and offline test environments
         settings = get_settings()
@@ -276,7 +298,9 @@ async def check_service_status(
     }
 
 
-def register_read_only_tools(registry: ToolRegistry | None = None) -> list[ToolDefinition]:
+def register_read_only_tools(
+    registry: ToolRegistry | None = None,
+) -> list[ToolDefinition]:
     """Register all 5 read-only tools into the specified or default ToolRegistry."""
     target_registry = registry or get_tool_registry()
     tools = [

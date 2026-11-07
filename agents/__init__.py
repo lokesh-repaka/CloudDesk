@@ -31,6 +31,7 @@ from agents.rules import (
     validate_customer_output,
     wrap_untrusted,
 )
+from agents.specialists.customer import CustomerAgent
 from agents.specialists.supervisor import SupervisorAgent
 
 __all__ = [
@@ -44,6 +45,7 @@ __all__ = [
     "SECURITY_PREAMBLE",
     "SUPERVISOR_SYSTEM_PROMPT",
     "TROUBLESHOOTING_SYSTEM_PROMPT",
+    "CustomerAgent",
     "EscalationDecision",
     "EscalationRule",
     "InjectionScanResult",
