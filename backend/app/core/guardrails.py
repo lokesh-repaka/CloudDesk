@@ -291,3 +291,230 @@ def sanitize_telemetry_payload(event: dict[str, Any]) -> dict[str, Any]:
             sanitized[key] = value
 
     return sanitized
+
+
+# ---------------------------------------------------------------------------
+# Customer Output Safety Guardrails (US-020, AC-066, AC-067, N5)
+# ---------------------------------------------------------------------------
+
+
+class OutputValidationResult(BaseModel):
+    """Result of validating customer-facing output draft against security policies."""
+
+    is_valid: bool = Field(
+        ..., description="Whether output passed all safety guardrails"
+    )
+    failure_reason: str = Field(
+        default="", description="Summary of guardrail violation if any"
+    )
+    violations: list[str] = Field(
+        default_factory=list, description="Detailed list of detected violations"
+    )
+
+    def __bool__(self) -> bool:
+        """Allow boolean evaluation: if not result: ..."""
+        return self.is_valid
+
+    def __iter__(self) -> Iterator[Any]:
+        """Allow 2-tuple unpacking: is_valid, reason = validate_customer_output(...)"""
+        yield self.is_valid
+        yield self.failure_reason
+
+
+def _is_luhn_valid(number_str: str) -> bool:
+    """Verify if a numeric sequence satisfies the ISO/IEC 7812 Luhn checksum algorithm."""
+    digits = [int(c) for c in number_str if c.isdigit()]
+    if len(digits) < 13 or len(digits) > 19:
+        return False
+    checksum = 0
+    reverse_digits = digits[::-1]
+    for i, digit in enumerate(reverse_digits):
+        if i % 2 == 1:
+            doubled = digit * 2
+            checksum += doubled - 9 if doubled > 9 else doubled
+        else:
+            checksum += digit
+    return checksum % 10 == 0
+
+
+_INTERNAL_URL_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+    (
+        "localhost_or_loopback_url",
+        re.compile(
+            r"(?i)\b(?:https?|ftp|postgres|postgresql|redis|ws|wss)://(?:localhost|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|0\.0\.0\.0)(?::\d+)?(?:/[^\s]*)?\b"
+            r"|\blocalhost:\d+\b",
+        ),
+    ),
+    (
+        "loopback_ip",
+        re.compile(r"\b127\.\d{1,3}\.\d{1,3}\.\d{1,3}\b|\b0\.0\.0\.0\b"),
+    ),
+    (
+        "rfc1918_10_x",
+        re.compile(r"\b10\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"),
+    ),
+    (
+        "rfc1918_192_168",
+        re.compile(r"\b192\.168\.\d{1,3}\.\d{1,3}\b"),
+    ),
+    (
+        "rfc1918_172_16_31",
+        re.compile(r"\b172\.(?:1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}\b"),
+    ),
+    (
+        "aws_metadata_ip",
+        re.compile(r"\b169\.254\.169\.254\b"),
+    ),
+    (
+        "internal_domain_suffix",
+        re.compile(
+            r"(?i)\b[a-zA-Z0-9_\.-]+\.(?:internal|local|corp|lan|cluster\.local|vpc\.internal)\b",
+        ),
+    ),
+]
+
+_SECRET_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+    (
+        "ai_api_key",
+        re.compile(r"\bsk-(?:proj-|ant-)?[a-zA-Z0-9_-]{20,}\b"),
+    ),
+    (
+        "github_token",
+        re.compile(
+            r"\b(?:ghp|gho|ghu|ghs|ghr)_[a-zA-Z0-9]{36}\b|\bgithub_pat_[a-zA-Z0-9_]{40,}\b"
+        ),
+    ),
+    (
+        "aws_access_key",
+        re.compile(r"\b(?:AKIA|ABIA|ACCA|ASIA)[0-9A-Z]{16}\b"),
+    ),
+    (
+        "bearer_token",
+        re.compile(r"(?i)\bbearer\s+eyJ[a-zA-Z0-9_\.-]+\b"),
+    ),
+    (
+        "plaintext_password",
+        re.compile(r"(?i)\bpassword\s*[:=]\s*\S+"),
+    ),
+    (
+        "db_connection_url_with_password",
+        re.compile(
+            r"(?i)\b(?:postgresql|postgres|mysql|redis)://[a-zA-Z0-9_-]+:[^@\s]+@[a-zA-Z0-9_\.-]+"
+        ),
+    ),
+    (
+        "api_key_assignment",
+        re.compile(r"(?i)\bapi[_-]?key\s*[:=]\s*[a-zA-Z0-9_-]{16,}\b"),
+    ),
+]
+
+_CREDIT_CARD_RE = re.compile(r"\b(?:\d{4}[ -]?){3}\d{1,4}\b")
+_CUSTOMER_ID_RE = re.compile(r"\bcust-\d{3}-[a-z0-9_-]+\b", re.IGNORECASE)
+_UUID_RE = re.compile(
+    r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.IGNORECASE
+)
+_EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+
+_ALLOWED_EMAIL_DOMAINS: set[str] = {
+    "clouddesk.com",
+    "clouddesk.demo",
+    "clouddesk.io",
+    "clouddesk.app",
+}
+
+
+def validate_customer_output(
+    draft: str | None,
+    current_customer_id: str | None = None,
+    current_customer_email: str | None = None,
+    allowed_customer_ids: set[str] | None = None,
+) -> OutputValidationResult:
+    """Validate customer reply draft against internal URL, secret, and customer leak policies (N5).
+
+    Implements AC-066 and AC-067:
+    - Blocks internal URLs, loopback/RFC 1918 IPs, and internal domains.
+    - Blocks secret keys (OpenAI, AWS, GitHub), Bearer tokens, passwords, and credit card numbers.
+    - Blocks leakage of foreign customer IDs, UUIDs, or third-party customer emails.
+    - Permits approved public URLs, company contact emails, and current customer details.
+    """
+    if not draft or not draft.strip():
+        return OutputValidationResult(is_valid=True, failure_reason="", violations=[])
+
+    clamped_draft = draft[:MAX_SCAN_PAYLOAD_LENGTH]
+    violations: list[str] = []
+
+    # 1. Internal URL and Network Checks
+    for pattern_name, pattern_re in _INTERNAL_URL_PATTERNS:
+        matches = pattern_re.findall(clamped_draft)
+        if matches:
+            for match in matches:
+                matched_str = match if isinstance(match, str) else str(match)
+                violations.append(
+                    f"Internal URL / network address detected ({pattern_name}): {matched_str}"
+                )
+
+    # 2. Secret and Credential Checks
+    for pattern_name, pattern_re in _SECRET_PATTERNS:
+        matches = pattern_re.findall(clamped_draft)
+        if matches:
+            for match in matches:
+                matched_str = match if isinstance(match, str) else str(match)
+                violations.append(
+                    f"Secret / credential pattern detected ({pattern_name}): {matched_str}"
+                )
+
+    # 2b. Credit Card Number (PAN) Check via Luhn Algorithm
+    for cc_match in _CREDIT_CARD_RE.finditer(clamped_draft):
+        candidate = cc_match.group(0)
+        if _is_luhn_valid(candidate):
+            violations.append(f"Credit card PAN detected: {candidate}")
+
+    # 3. Foreign Customer Data Leak Checks
+    allowed_ids = set()
+    if current_customer_id:
+        allowed_ids.add(current_customer_id.lower())
+    if allowed_customer_ids:
+        allowed_ids.update(cid.lower() for cid in allowed_customer_ids)
+
+    # 3a. Customer IDs
+    for cid_match in _CUSTOMER_ID_RE.finditer(clamped_draft):
+        found_cid = cid_match.group(0)
+        if found_cid.lower() not in allowed_ids:
+            violations.append(f"Foreign customer ID detected: {found_cid}")
+
+    # 3b. Customer UUIDs
+    for uuid_match in _UUID_RE.finditer(clamped_draft):
+        found_uuid = uuid_match.group(0)
+        if found_uuid.lower() not in allowed_ids:
+            violations.append(f"Foreign customer UUID detected: {found_uuid}")
+
+    # 3c. Customer Emails
+    for email_match in _EMAIL_RE.finditer(clamped_draft):
+        email_str = email_match.group(0)
+        email_lower = email_str.lower()
+        domain = email_lower.split("@")[-1]
+
+        # Allowed corporate domain
+        if domain in _ALLOWED_EMAIL_DOMAINS:
+            continue
+
+        # Current customer email
+        if current_customer_email and email_lower == current_customer_email.lower():
+            continue
+
+        # Current customer ID domain match (e.g. cust-101-acme -> acme.test)
+        if current_customer_id:
+            cust_suffix = current_customer_id.lower().split("-")[-1]
+            if cust_suffix and cust_suffix in domain:
+                continue
+
+        violations.append(f"Foreign customer email detected: {email_str}")
+
+    is_valid = len(violations) == 0
+    failure_reason = "; ".join(violations) if violations else ""
+
+    return OutputValidationResult(
+        is_valid=is_valid,
+        failure_reason=failure_reason,
+        violations=violations,
+    )

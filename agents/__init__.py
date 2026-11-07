@@ -18,12 +18,14 @@ from agents.rules import (
     EscalationDecision,
     EscalationRule,
     InjectionScanResult,
+    OutputValidationResult,
     assess_risk,
     evaluate_escalation_decision,
     matching_escalation_rules,
     rule_category,
     rule_severity,
     scan_for_injection,
+    validate_customer_output,
     wrap_untrusted,
 )
 
@@ -39,6 +41,7 @@ __all__ = [
     "EscalationDecision",
     "EscalationRule",
     "InjectionScanResult",
+    "OutputValidationResult",
     "assess_risk",
     "build_prompt_with_security_preamble",
     "evaluate_escalation_decision",
@@ -46,5 +49,6 @@ __all__ = [
     "rule_category",
     "rule_severity",
     "scan_for_injection",
+    "validate_customer_output",
     "wrap_untrusted",
 ]
