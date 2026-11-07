@@ -137,6 +137,8 @@ def test_gitignore_comprehensive_hygiene():
         "*.tfplan",
         "__pycache__/",
         ".pytest_cache/",
+        "node_modules/",
+        ".next/",
     ]
 
     for entry in required_gitignore_entries:
