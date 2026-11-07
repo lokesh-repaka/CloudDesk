@@ -34,8 +34,7 @@ export function WorkflowPanel({
   canAct = true,
 }: WorkflowPanelProps) {
   const isPendingApproval =
-    ticket.status === "pending_approval" ||
-    workflowState?.approval_status === "pending" ||
+    ticket.status === "waiting_on_approval" ||
     workflowState?.status === "waiting_on_approval";
 
   const isCompleted =
