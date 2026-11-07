@@ -161,7 +161,7 @@ Sub-tasks in the same phase that do not share files can be open at the same time
 
 | Task | Branch | Status |
 |------|--------|--------|
-| P11-1 · Human approval interrupt | `feature/workflow-human-approval` | Pending ❌ |
+| P11-1 · Human approval interrupt | `feature/workflow-human-approval` | Completed ✅ |
 | P11-2 · Approval decide and resume API | `feature/api-approvals-resume` | Pending ❌ |
 | P11-3 · Escalation routing | `feature/workflow-escalation-routing` | Pending ❌ |
 | P11-4 · Execute resolution on the shared tool path | `feature/workflow-execute-resolution` | Pending ❌ |

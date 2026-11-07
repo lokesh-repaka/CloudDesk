@@ -21,6 +21,7 @@ from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
+from langgraph.types import Command, interrupt
 
 from agents.checkpointer import get_in_memory_checkpointer
 from agents.nodes.investigate import (
@@ -169,18 +170,101 @@ SPECIALIST_AGENTS: list[dict[str, Any]] = [
 async def human_approval(state: SupportState) -> dict[str, Any]:
     """Execute human approval gate node (US-010, AC-035).
 
-    Holds execution when consequential actions (refund, reset) require human authorization.
+    Pauses graph execution via LangGraph interrupt() when consequential actions
+    require human authorization. Resumes execution when an authorized approval/rejection
+    decision Command is supplied.
     """
-    return {
+    from backend.app.core.guardrails import SECRET_PATTERNS
+
+    # If state is already resolved (e.g. pre-decided or injected), return immediately
+    status = state.get("approval_status")
+    if status in ("approved", "rejected"):
+        return {
+            "current_node": NODE_HUMAN_APPROVAL,
+            "completed_nodes": [NODE_HUMAN_APPROVAL],
+            "approval_status": status,
+            "token_usage": {
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_tokens": 0,
+            },
+        }
+
+    # Prepare lightweight approval interrupt payload (CLAUDE.md §18.8)
+    approval_req = state.get("approval_request") or {}
+    ticket_id = state.get("ticket_id") or ""
+    workflow_id = state.get("workflow_id") or ""
+
+    # Scrub sensitive data from arguments if present (CWE-200)
+    args = approval_req.get("arguments", {})
+    if isinstance(args, dict):
+        scrubbed_args: dict[str, Any] = {}
+        for k, v in args.items():
+            val_str = str(v)
+            is_secret = any(regex.search(val_str) for _, regex in SECRET_PATTERNS)
+            scrubbed_args[k] = "[REDACTED]" if is_secret else v
+    else:
+        scrubbed_args = args
+
+    payload = {
+        "ticket_id": ticket_id,
+        "workflow_id": workflow_id,
+        "tool_name": approval_req.get("tool_name", "consequential_action"),
+        "arguments": scrubbed_args,
+        "reason": approval_req.get(
+            "reason", "Consequential action requires human authorization (AC-035)"
+        ),
+        "status": "pending",
+    }
+
+    # Calling interrupt() halts execution and saves state to checkpointer
+    decision = interrupt(payload)
+
+    # Execution resumes here when Command(resume=decision) is invoked
+    action = "rejected"
+    decision_by = None
+    reason = None
+
+    if isinstance(decision, dict):
+        raw_act = decision.get("action") or decision.get("status") or ""
+        if str(raw_act).strip().lower() in ("approve", "approved"):
+            action = "approved"
+        else:
+            action = "rejected"
+        decision_by = (
+            decision.get("approved_by")
+            or decision.get("decided_by")
+            or decision.get("user_id")
+        )
+        reason = decision.get("reason") or decision.get("rejection_reason")
+    elif isinstance(decision, str):
+        if decision.strip().lower() in ("approve", "approved"):
+            action = "approved"
+        else:
+            action = "rejected"
+
+    res_dict: dict[str, Any] = {
         "current_node": NODE_HUMAN_APPROVAL,
         "completed_nodes": [NODE_HUMAN_APPROVAL],
-        "approval_status": state.get("approval_status") or "pending",
+        "approval_status": action,
+        "approval_decision": action,
+        "approval_decision_by": str(decision_by) if decision_by else None,
+        "approval_reason": str(reason) if reason else None,
         "token_usage": {
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "total_tokens": 0,
         },
     }
+
+    if action == "rejected":
+        res_dict["escalation_required"] = True
+        res_dict["escalation_team"] = "Supervisor"
+        res_dict["escalation_reason"] = (
+            reason or "Human approval was rejected by supervisor."
+        )
+
+    return res_dict
 
 
 def route_after_approval(state: SupportState) -> str:
@@ -359,6 +443,17 @@ async def run_support_workflow(
     try:
         final_state: SupportState = await graph.ainvoke(initial_state, config=config)
 
+        # Detect LangGraph interrupt gate (US-010, AC-035)
+        is_interrupted = bool(final_state.get("__interrupt__"))
+        if is_interrupted:
+            final_state["current_node"] = NODE_HUMAN_APPROVAL
+            final_state["approval_status"] = "pending"
+            final_state["approval_required"] = True
+            if NODE_HUMAN_APPROVAL not in final_state.get("completed_nodes", []):
+                final_state["completed_nodes"] = list(
+                    final_state.get("completed_nodes", [])
+                ) + [NODE_HUMAN_APPROVAL]
+
         # Record discrete node telemetry events
         completed_nodes = final_state.get("completed_nodes", [])
         for node in completed_nodes:
@@ -384,11 +479,121 @@ async def run_support_workflow(
                 duration_ms=15,
             )
 
-        if final_state.get("approval_required"):
+        if is_interrupted or final_state.get("approval_required"):
             await active_tracer.record_approval_requested(
-                node_name="risk_check",
+                node_name=NODE_HUMAN_APPROVAL,
                 request_data=final_state.get("approval_request") or {},
             )
+
+        if not is_interrupted:
+            await active_tracer.record_workflow_completed(
+                node_name="tail",
+                data={"completed_nodes": completed_nodes},
+            )
+        return final_state
+    except Exception as exc:
+        await active_tracer.record_error(
+            node_name="workflow",
+            error_message=str(exc),
+        )
+        raise
+
+
+async def resume_support_workflow(
+    thread_id: str,
+    decision: dict[str, Any] | str,
+    checkpointer: BaseCheckpointSaver | None = None,
+    tracer: Any | None = None,
+    graph: CompiledStateGraph | None = None,
+) -> SupportState:
+    """Resume an interrupted support workflow from checkpointer with an approval decision (US-011, AC-039, AC-040).
+
+    Args:
+        thread_id: Thread ID corresponding to the paused workflow execution.
+        decision: Decision payload dictionary or raw string ("approve" / "reject").
+        checkpointer: Optional explicit checkpointer instance.
+        tracer: Optional WorkflowTracer instance for telemetry recording.
+        graph: Optional compiled StateGraph instance.
+
+    Returns:
+        Final or interrupted SupportState dictionary following resumption.
+    """
+    from agents.tracer import (
+        EVENT_NODE_COMPLETED,
+        EVENT_NODE_STARTED,
+        tracer_for,
+    )
+
+    saver = checkpointer if checkpointer is not None else InMemorySaver()
+    active_graph = (
+        graph if graph is not None else create_support_graph(checkpointer=saver)
+    )
+    config = {"configurable": {"thread_id": thread_id}}
+
+    state_snapshot = await active_graph.aget_state(config)
+    if not state_snapshot or not state_snapshot.next:
+        raise ValueError(
+            f"No interrupted workflow state found for thread_id '{thread_id}'. "
+            "Workflow may have already completed or was not interrupted."
+        )
+
+    resume_payload: dict[str, Any] = {}
+    if isinstance(decision, dict):
+        raw_act = decision.get("action") or decision.get("status") or ""
+        act = (
+            "approved"
+            if str(raw_act).strip().lower() in ("approve", "approved")
+            else "rejected"
+        )
+        resume_payload = {**decision, "action": act}
+    elif isinstance(decision, str):
+        act = (
+            "approved"
+            if decision.strip().lower() in ("approve", "approved")
+            else "rejected"
+        )
+        resume_payload = {"action": act}
+    else:
+        resume_payload = {"action": "rejected"}
+
+    cmd = Command(resume=resume_payload)
+    active_tracer = tracer or tracer_for(state_snapshot.values)
+
+    try:
+        final_state: SupportState = await active_graph.ainvoke(cmd, config=config)
+
+        # Record approval_resolved telemetry event
+        dec_status = final_state.get("approval_status") or resume_payload.get("action")
+        await active_tracer.record_approval_resolved(
+            node_name=NODE_HUMAN_APPROVAL,
+            decision_data={
+                "decision": dec_status,
+                "thread_id": thread_id,
+                "decided_by": final_state.get("approval_decision_by"),
+                "reason": final_state.get("approval_reason"),
+            },
+        )
+
+        # Record telemetry for newly completed nodes
+        completed_nodes = final_state.get("completed_nodes", [])
+        for node in (
+            NODE_EXECUTE_RESOLUTION,
+            NODE_ESCALATION,
+            NODE_TICKET_SUMMARY,
+            NODE_MEMORY_UPDATE,
+        ):
+            if node in completed_nodes:
+                await active_tracer.emit(
+                    event_type=EVENT_NODE_STARTED,
+                    node_name=node,
+                    payload={"node": node},
+                )
+                await active_tracer.emit(
+                    event_type=EVENT_NODE_COMPLETED,
+                    node_name=node,
+                    payload={"node": node},
+                    duration_ms=10,
+                )
 
         await active_tracer.record_workflow_completed(
             node_name="tail",
@@ -397,7 +602,7 @@ async def run_support_workflow(
         return final_state
     except Exception as exc:
         await active_tracer.record_error(
-            node_name="workflow",
+            node_name=NODE_HUMAN_APPROVAL,
             error_message=str(exc),
         )
         raise
@@ -414,6 +619,7 @@ __all__ = [
     "execute_resolution",
     "get_default_support_graph",
     "human_approval",
+    "resume_support_workflow",
     "route_after_approval",
     "run_support_workflow",
 ]
