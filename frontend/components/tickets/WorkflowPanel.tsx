@@ -184,12 +184,12 @@ export function WorkflowPanel({
                   <span className="text-slate-500 font-medium">Classified Root Cause:</span>
                   <Badge variant="brand">{String(diagnosis.root_cause || "Identified")}</Badge>
                 </div>
-                {diagnosis.summary && (
+                {Boolean(diagnosis.summary) && (
                   <p className="text-slate-700 text-xs leading-relaxed font-sans">
                     {String(diagnosis.summary)}
                   </p>
                 )}
-                {diagnosis.confidence && (
+                {Boolean(diagnosis.confidence) && (
                   <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-2xs text-slate-500">
                     <span>Confidence Score:</span>
                     <span className="font-mono font-medium text-slate-700">
@@ -227,13 +227,13 @@ export function WorkflowPanel({
                       <span className="font-semibold text-slate-800">
                         {cite.title || `Source #${i + 1}`}
                       </span>
-                      {cite.score && (
+                      {Boolean(cite.score) && (
                         <Badge variant="info" size="sm">
                           Score: {(cite.score * 100).toFixed(0)}%
                         </Badge>
                       )}
                     </div>
-                    {cite.snippet && (
+                    {Boolean(cite.snippet) && (
                       <p className="text-slate-600 text-2xs font-sans line-clamp-2">
                         {cite.snippet}
                       </p>
