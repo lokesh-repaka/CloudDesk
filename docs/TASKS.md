@@ -206,7 +206,7 @@ Sub-tasks in the same phase that do not share files can be open at the same time
 |------|--------|--------|
 | P14-1 · Evaluation thresholds | `feature/eval-thresholds` | Completed ✅ |
 | P14-2 · Backend and frontend Dockerfiles | `feature/docker-images` | Completed ✅ |
-| P14-3 · Compose stack | `feature/docker-compose` | Pending ❌ |
+| P14-3 · Compose stack | `feature/docker-compose` | Completed ✅ |
 | P14-4 · Terraform and CI scaffolds | `feature/delivery-terraform-ci` | Pending ❌ |
 | P14-5 · Deployment hygiene tests | `feature/deployment-hygiene-tests` | Pending ❌ |
 
