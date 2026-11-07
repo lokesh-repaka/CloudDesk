@@ -6,10 +6,6 @@ from backend.app.schemas.approvals import (
     ApproveDecisionRequest,
     RejectDecisionRequest,
 )
-from backend.app.schemas.escalations import (
-    EscalationResponse,
-    EscalationStatusUpdateRequest,
-)
 from backend.app.schemas.auth import (
     DemoTokensResponse,
     DemoTokenUser,
@@ -107,8 +103,6 @@ __all__ = [
     "EscalateResponse",
     "EscalationDecision",
     "EscalationResponse",
-    "EscalationResponse",
-    "EscalationStatusUpdateRequest",
     "EscalationStatusEnum",
     "EscalationStatusUpdateRequest",
     "Evidence",
