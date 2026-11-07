@@ -309,3 +309,121 @@ export interface McpToolDefinition {
   requires_approval: boolean;
 }
 
+// ----------------------------------------------------------------------------
+// Authentication & Identity Types (API_CONTRACT.md §2)
+// ----------------------------------------------------------------------------
+
+export interface LoginRequest {
+  email: string;
+  password?: string | null;
+}
+
+export interface UserProfileResponse {
+  id: string;
+  email: string;
+  full_name?: string | null;
+  role: Role;
+  avatar_url?: string | null;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  user: UserProfileResponse;
+}
+
+export interface DemoTokenUser {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  token: string;
+  expires_in: number;
+}
+
+export interface DemoTokensResponse {
+  admin: DemoTokenUser;
+  agent: DemoTokenUser;
+  viewer: DemoTokenUser;
+}
+
+// ----------------------------------------------------------------------------
+// Human Approval Gating Types (P11-2 / API_CONTRACT.md §5.1)
+// ----------------------------------------------------------------------------
+
+export interface ApprovalRequestResponse {
+  id: string;
+  ticket_id: string;
+  workflow_id: string;
+  action_name: string;
+  action_payload: Record<string, unknown>;
+  status: ApprovalStatus;
+  decided_by?: string | null;
+  rejection_reason?: string | null;
+  decided_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApproveDecisionRequest {
+  notes?: string | null;
+}
+
+export interface RejectDecisionRequest {
+  rejection_reason: string;
+}
+
+// ----------------------------------------------------------------------------
+// Escalation Types (P11-3 / API_CONTRACT.md §2)
+// ----------------------------------------------------------------------------
+
+export interface EscalationResponse {
+  id: string;
+  ticket_id: string;
+  workflow_id?: string | null;
+  target_team: string;
+  policy_reason: string;
+  severity: string;
+  status: string;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface EscalationStatusUpdateRequest {
+  status: "open" | "in_investigation" | "resolved" | "cancelled";
+}
+
+// ----------------------------------------------------------------------------
+// Specialist Agents & Topology Types (P10-5)
+// ----------------------------------------------------------------------------
+
+export interface SpecialistAgentResponse {
+  name: string;
+  description: string;
+  nodes: string[];
+  tools: string[];
+  rules: string[];
+}
+
+export interface AgentTopologyResponse {
+  nodes: string[];
+  edges: Array<[string, string]>;
+  specialists: SpecialistAgentResponse[];
+}
+
+// ----------------------------------------------------------------------------
+// Audit Log Types (API_CONTRACT.md §5.3)
+// ----------------------------------------------------------------------------
+
+export interface AuditLogResponse {
+  id: string;
+  timestamp: string;
+  actor: string;
+  action: string;
+  target: string;
+  detail: string;
+  ip_address?: string | null;
+}
+
+
