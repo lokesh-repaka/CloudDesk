@@ -22,6 +22,7 @@ from agents.tracer import WorkflowTracer
 from backend.app.core.database import get_db_session
 from backend.app.core.security import AuthenticatedUser, require_role
 from backend.app.models.entities import (
+    ApprovalRequest,
     Customer,
     Escalation,
     Ticket,
@@ -35,6 +36,7 @@ from backend.app.repositories.ticket_repo import (
     TicketRepository,
 )
 from backend.app.schemas.common import (
+    ApprovalStatusEnum,
     CategoryEnum,
     ChannelEnum,
     CustomerPlanEnum,
@@ -391,7 +393,7 @@ async def run_ticket_workflow(
     if ticket.status == TicketStatusEnum.WAITING_ON_APPROVAL.value:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Cannot start workflow: ticket {ticket_id} is currently waiting on approval.",
+            detail="Ticket is already waiting on approval",
         )
 
     wf_id = f"wf-{uuid.uuid4().hex[:12]}"
@@ -452,6 +454,28 @@ async def run_ticket_workflow(
         if final_state.get("approval_required"):
             wf_run.status = WorkflowStatusEnum.WAITING_ON_APPROVAL.value
             ticket.status = TicketStatusEnum.WAITING_ON_APPROVAL.value
+
+            # Persist ApprovalRequest in database (AC-036)
+            app_req_data = final_state.get("approval_request") or {}
+            tool_name = app_req_data.get("tool_name") or "consequential_action"
+            action_payload = app_req_data.get("arguments") or {}
+
+            # Idempotently check if an approval request already exists for this workflow
+            stmt = select(ApprovalRequest).where(
+                ApprovalRequest.ticket_id == ticket.id,
+                ApprovalRequest.workflow_id == wf_id,
+            )
+            existing_appr = (await session.execute(stmt)).scalars().first()
+            if existing_appr is None:
+                new_appr = ApprovalRequest(
+                    id=f"appr-{uuid.uuid4().hex[:12]}",
+                    ticket_id=ticket.id,
+                    workflow_id=wf_id,
+                    action_name=tool_name,
+                    action_payload=action_payload,
+                    status=ApprovalStatusEnum.PENDING.value,
+                )
+                session.add(new_appr)
         elif final_state.get("escalation_required"):
             wf_run.status = WorkflowStatusEnum.ESCALATED.value
             ticket.status = TicketStatusEnum.ESCALATED.value

@@ -1,0 +1,56 @@
+CLAUDE.md
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+You have access to CLAUDE.md file. with respect to this CLAUDE.md file, I want you to create all the following required files for the project like SKILL.md, MEMORY.md etc.
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+Create a TASKS.md file. it should contain the development plan in phases. Create the phases in such a way that the dependency issue should be minimized. Each phase must have sub tasks. each subtasks should belong to a feature-github repo in a format "feature/repo-name".  Create the phases and sub-tasks in fhe following structure. I and giving you from another project example. refer this and create TASKS.md file like this. 
+
+attach a sample TASKS.md file here. 
+
+status should be Pending ❌ or Completed ✅
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+Create an detailed Architecture Document with complete architecture mermaid diagram that I can feed it for erasor.io to create the complete architecture diagram, component level, infra level explenation. inside the @Internal folder. 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+You have access to cursour rule files under  @.cursor/rules folder and all its contents. I want you to modity them according to this project requirement. You have the freedome to create new file or delete the unwanted files. 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Avoiding Lint, ESLint ruff errors:
+I want to avoid Lint, ESlint , ruff errors when enabling the CICD pipeline. How to make sure these are thoroughly checked and mitigated from beginning. I am using Cursor IDE and optionally CLAUDE CLI to develop the code. How can I set these to be checked every time when it finishes the coding. and I am using UV package manager. Create a plan how you are going to metigate it. Do not start making any code or document change now. 
+
+Once the plan is ready, go through it and implement it 
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+Basic Prompt for each tasks:
+-----------------------------
+You have access to all the files in my project root directory. I am following the TASKS.md file for structured development.  Go ahead and complete the P1-2 · Health routes and request-id middleware· 
+ Once completed do the following tasks:
+1. Make sure to update the .gitignore file at the end of each Task if required. 
+2. At the end give me the short description what I have to write in the "Add a description" box in the github pull request.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+AFTER EACH PHASE, GET AN EXPLAINABLE DOCUMENT ABOUT WHAT HAD DONE IN THAT PHASE IN A LEMAN LANGUAGE. 
+
+CODEBASE EXPLAINABLE DOCUMENT
+-------------------------------
+In Phase 1 We have created many code components. I want to explain this to the recruters how these are working. Create an easy to understand explanation document called phase#_explained.md inside @internal/explain_codebase/ folder. I am going to explain this file exactly as is to the interview board where non technical people will be there. they should understand the system design in simple words about the phasees after hearing or reading this file. 
+
+SYSTEM DESIGN EVOLUTION DOCUMENT
+--------------------------------
+In Phase 1  We have created many code components. Create @internal/design_evolution/Phase#_Project_System_Design_Evolution.md file with the evolving system design for this application on respective phases.  it should start from simple design of that particular phase beginning to the advanced design we develop at the end of the phase. Include mermaid images of the system designs on each phase, and if required, update them on a subtask basis as well.
+
+INFRA AND DOCKER DESIGN EVOLUTION. 
+--------------------------------
+In Phase 1 We have created many code components. Create a file @internal/Infra_design_evolution/Phase#_Infra_design_evolution.md to explain the docker networking or component wiring and routing used in this application. explain each componants with mermaid diagrams and adiquate explenations. Include mermaid images of the system designs on each phase, and if required, update them on a subtask basis as well. Each phase must have a separate file 
+
+
+INTERVIEW PREPERATIONS
+----------------------
+In Phase 1 We have created many code components. Create the @internal/QnA/Phase#_Interview_QnA.md file with all possible interview questions and answers from that particular phase.  Each phase must have a separate file 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+

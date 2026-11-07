@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     # Core runtime & environment
     DEMO_MODE: bool = True
     ENVIRONMENT: str = "development"
-    CORS_ORIGINS: list[str] = ["http://localhost:3000"]
+    CORS_ORIGINS: list[str] | str = ["http://localhost:3000"]
 
     # Authentication & Security
     JWT_SECRET: str = "dev-secret-change-in-prod"
@@ -58,7 +58,7 @@ class Settings(BaseSettings):
     LANGCHAIN_API_KEY: str | None = None
     LANGCHAIN_PROJECT: str = "clouddesk-support"
 
-    @field_validator("CORS_ORIGINS", mode="before")
+    @field_validator("CORS_ORIGINS", mode="after")
     @classmethod
     def parse_cors_origins(cls, value: Any) -> list[str]:
         if isinstance(value, str):
@@ -73,7 +73,7 @@ class Settings(BaseSettings):
             return [item.strip() for item in value.split(",") if item.strip()]
         if isinstance(value, list):
             return [str(item).strip() for item in value]
-        return value
+        return [str(value)]
 
     @model_validator(mode="after")
     def validate_production_security(self) -> "Settings":

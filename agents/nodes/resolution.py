@@ -20,7 +20,11 @@ from agents.rules import assess_risk, matching_escalation_rules
 from agents.specialists.escalation import EscalationAgent
 from agents.specialists.resolution import ResolutionAgent
 from agents.state import SupportState
-from backend.app.core.guardrails import scan_for_injection, validate_customer_output
+from backend.app.core.guardrails import (
+    scan_for_injection,
+    scrub,
+    validate_customer_output,
+)
 from backend.app.schemas.common import SeverityEnum
 from backend.app.schemas.workflow import (
     Diagnosis,
@@ -245,6 +249,15 @@ async def risk_check(state: SupportState) -> dict[str, Any]:
                     target_args = act.get("arguments", {})
                     target_reason = act.get("reason", target_reason)
                     break
+
+            # Scrub sensitive data from arguments and reason (CWE-200)
+            if isinstance(target_reason, str):
+                target_reason = scrub(target_reason)
+            if isinstance(target_args, dict):
+                target_args = {
+                    k: (scrub(str(v)) if isinstance(v, str) else v)
+                    for k, v in target_args.items()
+                }
 
             approval_request = {
                 "ticket_id": ticket_id,
