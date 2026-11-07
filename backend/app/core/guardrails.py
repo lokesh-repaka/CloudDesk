@@ -376,7 +376,7 @@ _INTERNAL_URL_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
 _SECRET_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     (
         "ai_api_key",
-        re.compile(r"\bsk-(?:proj-|ant-)?[a-zA-Z0-9_-]{20,}\b"),
+        re.compile(r"\bsk[-_](?:proj-|ant-|live_|test_)?[a-zA-Z0-9_-]{16,}\b"),
     ),
     (
         "github_token",
@@ -529,7 +529,7 @@ REDACTION_MARKER: str = "***REDACTED***"
 SECRET_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     (
         "ai_api_key",
-        re.compile(r"\bsk-(?:proj-|ant-)?[a-zA-Z0-9_-]{20,}\b"),
+        re.compile(r"\bsk[-_](?:proj-|ant-|live_|test_)?[a-zA-Z0-9_-]{16,}\b"),
     ),
     (
         "github_token",

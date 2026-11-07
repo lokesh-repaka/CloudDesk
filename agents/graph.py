@@ -33,12 +33,14 @@ from agents.nodes.investigate import (
     troubleshooting,
 )
 from agents.nodes.resolution import (
+    NODE_EXECUTE_RESOLUTION,
     NODE_MEMORY_UPDATE,
     NODE_RESOLUTION_PLANNING,
     NODE_RISK_CHECK,
     ROUTE_ESCALATION,
     ROUTE_EXECUTE_RESOLUTION,
     ROUTE_HUMAN_APPROVAL,
+    execute_resolution,
     memory_update,
     resolution_planning,
     risk_check,
@@ -58,7 +60,6 @@ logger = logging.getLogger(__name__)
 
 # Node identifiers
 NODE_HUMAN_APPROVAL = "human_approval"
-NODE_EXECUTE_RESOLUTION = "execute_resolution"
 NODE_ESCALATION = "escalation"
 
 # Complete ordered graph node identifiers for frontend topology discovery
@@ -274,30 +275,6 @@ def route_after_approval(state: SupportState) -> str:
     if status == "rejected" or decision == "rejected":
         return NODE_ESCALATION
     return NODE_EXECUTE_RESOLUTION
-
-
-async def execute_resolution(state: SupportState) -> dict[str, Any]:
-    """Execute approved resolution actions on the shared tool path (P11-4, AC-032)."""
-    actions = state.get("resolution_actions") or []
-    executed: list[dict[str, Any]] = []
-    for act in actions:
-        if isinstance(act, dict):
-            executed.append({**act, "status": "executed"})
-        elif hasattr(act, "model_dump"):
-            dumped = act.model_dump()
-            dumped["status"] = "executed"
-            executed.append(dumped)
-
-    return {
-        "current_node": NODE_EXECUTE_RESOLUTION,
-        "completed_nodes": [NODE_EXECUTE_RESOLUTION],
-        "executed_actions": executed,
-        "token_usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "total_tokens": 0,
-        },
-    }
 
 
 async def escalation(

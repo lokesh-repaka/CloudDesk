@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 # Node identifiers for completed_nodes channel and UI graph tracing
 NODE_RESOLUTION_PLANNING = "resolution_planning"
 NODE_RISK_CHECK = "risk_check"
+NODE_EXECUTE_RESOLUTION = "execute_resolution"
 NODE_MEMORY_UPDATE = "memory_update"
 
 # Conditional routing branch targets from risk_check
@@ -342,6 +343,220 @@ def route_after_risk_check(state: SupportState) -> str:
     return ROUTE_EXECUTE_RESOLUTION
 
 
+async def execute_resolution(
+    state: SupportState,
+    *,
+    session: Any = None,
+    tracer: Any = None,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Execute planned resolution actions on the shared tool path (P11-4, CLAUDE.md §7.4, AC-032, AC-039).
+
+    - Dispatches all actions through ToolRegistry.execute(name, args, approved=...).
+    - Auto-resolved safe actions execute with approved=False (permitted by policy).
+    - Human-approved consequential actions execute with approved=True.
+    - Unapproved consequential actions are blocked by ToolPolicy (CWE-285).
+    - Exceptions and tool failures never crash the graph (captured into executed_actions with status='failed').
+    - Idempotent: actions with status='executed' are preserved without re-running.
+    - Records fine-grained telemetry via WorkflowTracer.
+    """
+    from backend.app.tools.registry import get_tool_registry
+
+    ticket_id = state.get("ticket_id") or ""
+    workflow_id = state.get("workflow_id") or ""
+    customer_id = state.get("customer_id") or ""
+    approval_status = state.get("approval_status") or state.get("approval_decision")
+    is_approved = str(approval_status).strip().lower() in ("approved", "approve")
+
+    active_tracer = tracer or kwargs.get("tracer")
+    if active_tracer is not None and hasattr(active_tracer, "emit"):
+        try:
+            from agents.tracer import EVENT_NODE_STARTED
+
+            await active_tracer.emit(
+                EVENT_NODE_STARTED,
+                NODE_EXECUTE_RESOLUTION,
+                {"ticket_id": ticket_id, "approved": is_approved},
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.debug(
+                "Telemetry emit failed on node_started in execute_resolution: %s", exc
+            )
+
+    # Collect candidate resolution actions from state
+    raw_actions = (
+        state.get("resolution_actions")
+        or state.get("resolution_plan", {}).get("actions", [])
+        or []
+    )
+
+    executed_actions: list[dict[str, Any]] = []
+    errors: list[str] = []
+    tool_registry = get_tool_registry()
+
+    for act in raw_actions:
+        act_dict = (
+            act
+            if isinstance(act, dict)
+            else (act.model_dump() if hasattr(act, "model_dump") else dict(act))
+        )
+
+        # Idempotency check: preserve already executed action
+        if act_dict.get("status") == "executed":
+            executed_actions.append(act_dict)
+            continue
+
+        tool_name = (
+            act_dict.get("tool_name")
+            or act_dict.get("action_name")
+            or act_dict.get("tool")
+        )
+
+        if not tool_name or not isinstance(tool_name, str):
+            continue
+
+        # Prepare arguments with ticket/customer context
+        args: dict[str, Any] = dict(
+            act_dict.get("arguments") or act_dict.get("action_payload") or {}
+        )
+        tool_def = tool_registry.get(tool_name)
+        param_names: set[str] = set()
+        if tool_def is not None and callable(tool_def.func):
+            try:
+                import inspect
+
+                param_names = set(inspect.signature(tool_def.func).parameters.keys())
+            except Exception:  # noqa: BLE001
+                param_names = set()
+
+        if (
+            ticket_id
+            and "ticket_id" not in args
+            and (not param_names or "ticket_id" in param_names)
+        ):
+            args["ticket_id"] = ticket_id
+        if (
+            workflow_id
+            and "workflow_id" not in args
+            and (param_names and "workflow_id" in param_names)
+        ):
+            args["workflow_id"] = workflow_id
+        if (
+            customer_id
+            and "customer_id" not in args
+            and tool_name == "create_refund_request"
+        ):
+            args["customer_id"] = customer_id
+
+        exec_kwargs: dict[str, Any] = dict(args)
+        if session is not None and (not param_names or "session" in param_names):
+            exec_kwargs["session"] = session
+
+        try:
+            tool_res = await tool_registry.execute(
+                name=tool_name,
+                args=exec_kwargs,
+                approved=is_approved,
+            )
+        except Exception as exc:  # noqa: BLE001
+            from backend.app.tools.base import ToolResult
+
+            tool_res = ToolResult(
+                ok=False,
+                error=f"Unexpected tool execution error: {exc}",
+                duration_ms=0.0,
+            )
+
+        if active_tracer is not None and hasattr(active_tracer, "emit"):
+            try:
+                from agents.tracer import EVENT_TOOL_CALLED
+                from backend.app.core.guardrails import scrub
+
+                def _scrub_telemetry_obj(val: Any) -> Any:
+                    if isinstance(val, str):
+                        return scrub(val)
+                    if isinstance(val, dict):
+                        return {k: _scrub_telemetry_obj(v) for k, v in val.items()}
+                    if isinstance(val, list):
+                        return [_scrub_telemetry_obj(item) for item in val]
+                    return val
+
+                telemetry_args = _scrub_telemetry_obj(args)
+
+                await active_tracer.emit(
+                    EVENT_TOOL_CALLED,
+                    NODE_EXECUTE_RESOLUTION,
+                    {
+                        "tool": tool_name,
+                        "arguments": telemetry_args,
+                        "ok": tool_res.ok,
+                        "duration_ms": tool_res.duration_ms,
+                    },
+                    duration_ms=int(tool_res.duration_ms),
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.debug(
+                    "Telemetry emit failed on tool_called in execute_resolution: %s",
+                    exc,
+                )
+
+        if tool_res.ok:
+            executed_actions.append(
+                {
+                    **act_dict,
+                    "status": "executed",
+                    "result": tool_res.data,
+                    "duration_ms": tool_res.duration_ms,
+                }
+            )
+        else:
+            err_msg = tool_res.error or f"Tool '{tool_name}' execution failed"
+            executed_actions.append(
+                {
+                    **act_dict,
+                    "status": "failed",
+                    "error": err_msg,
+                    "duration_ms": tool_res.duration_ms,
+                }
+            )
+            errors.append(f"execute_resolution error for {tool_name}: {err_msg}")
+
+    if active_tracer is not None and hasattr(active_tracer, "emit"):
+        try:
+            from agents.tracer import EVENT_NODE_COMPLETED
+
+            await active_tracer.emit(
+                EVENT_NODE_COMPLETED,
+                NODE_EXECUTE_RESOLUTION,
+                {
+                    "executed_count": len(
+                        [a for a in executed_actions if a.get("status") == "executed"]
+                    ),
+                    "failed_count": len(
+                        [a for a in executed_actions if a.get("status") == "failed"]
+                    ),
+                },
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.debug(
+                "Telemetry emit failed on node_completed in execute_resolution: %s", exc
+            )
+
+    partial_state: dict[str, Any] = {
+        "current_node": NODE_EXECUTE_RESOLUTION,
+        "completed_nodes": [NODE_EXECUTE_RESOLUTION],
+        "executed_actions": executed_actions,
+        "token_usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+        },
+    }
+    if errors:
+        partial_state["errors"] = errors
+    return partial_state
+
+
 async def memory_update(state: SupportState) -> dict[str, Any]:
     """Execute customer memory update node (F11, AC-050, AC-051).
 
@@ -388,12 +603,14 @@ async def memory_update(state: SupportState) -> dict[str, Any]:
 
 
 __all__ = [
+    "NODE_EXECUTE_RESOLUTION",
     "NODE_MEMORY_UPDATE",
     "NODE_RESOLUTION_PLANNING",
     "NODE_RISK_CHECK",
     "ROUTE_ESCALATION",
     "ROUTE_EXECUTE_RESOLUTION",
     "ROUTE_HUMAN_APPROVAL",
+    "execute_resolution",
     "memory_update",
     "resolution_planning",
     "risk_check",
