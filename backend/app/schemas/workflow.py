@@ -235,6 +235,10 @@ class EscalationDecision(BaseModel):
         default=None,
         description="Department or team assigned e.g. billing_team, security_team, tier_3_engineering.",
     )
+    rule_id: str | None = Field(
+        default=None,
+        description="Triggered deterministic policy rule ID.",
+    )
     reason: str = Field(
         default="",
         description="Policy or judgement justification for escalation.",
