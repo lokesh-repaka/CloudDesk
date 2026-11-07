@@ -1,0 +1,76 @@
+name: Security Audits & Vulnerability Scans
+
+on:
+  push:
+    branches: [main, development, testing]
+  pull_request:
+    branches: [main, development, testing]
+  schedule:
+    - cron: "0 2 * * 1"  # Weekly Monday 02:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: Secret Detection (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  pip-audit:
+    name: Python Dependency Audit (pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv and dependencies
+        run: |
+          pip install uv pip-audit
+          uv export --no-dev -o requirements.txt
+
+      - name: Run pip-audit vulnerability audit
+        run: |
+          pip-audit -r requirements.txt
+
+  trivy:
+    name: Container Vulnerability Scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy filesystem vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          severity: "CRITICAL,HIGH"
+
+  checkov:
+    name: Infrastructure as Code Security (checkov)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Checkov IaC security scanner
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: "deployment"
+          framework: "terraform"
+          soft_fail: true

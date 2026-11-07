@@ -1,0 +1,39 @@
+name: Docker Container Build & Verify
+
+on:
+  push:
+    branches: [main, development, testing]
+  pull_request:
+    branches: [main, development, testing]
+
+permissions:
+  contents: read
+
+jobs:
+  build-containers:
+    name: Build Multi-Stage Docker Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./backend/Dockerfile
+          push: false
+          tags: clouddesk-backend:${{ github.sha }}
+          load: true
+
+      - name: Build Frontend Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+          tags: clouddesk-frontend:${{ github.sha }}
+          load: true

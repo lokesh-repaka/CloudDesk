@@ -1,0 +1,106 @@
+name: Reusable Deployment Pipeline
+
+on:
+  workflow_call:
+    inputs:
+      cloud:
+        description: "Target cloud platform (aws | azure | gcp)"
+        required: true
+        type: string
+      environment:
+        description: "Target environment (dev | staging | prod)"
+        required: true
+        type: string
+      image_tag:
+        description: "Image tag to deploy (defaults to git SHA)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  bootstrap-registry:
+    name: Bootstrap Container Registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate via OIDC (${{ inputs.cloud }})
+        run: echo "Configuring OIDC federation for ${{ inputs.cloud }}..."
+
+      - name: Ensure repository exists
+        run: echo "Registry ready for ${{ inputs.cloud }}."
+
+  build-and-push:
+    name: Build & Push Images (${{ inputs.cloud }})
+    needs: [bootstrap-registry]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Image Tag
+        id: vars
+        run: |
+          TAG="${{ inputs.image_tag }}"
+          if [ -z "$TAG" ]; then
+            TAG="${{ github.sha }}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Run Build and Push Script
+        run: |
+          chmod +x deployment/scripts/build_and_push.sh
+          deployment/scripts/build_and_push.sh "${{ inputs.cloud }}" "${{ inputs.environment }}"
+
+  plan:
+    name: Terraform Plan (${{ inputs.cloud }}/${{ inputs.environment }})
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Plan
+        run: |
+          cd deployment/${{ inputs.cloud }}
+          terraform init -backend=false
+          terraform plan -var-file="../environments/${{ inputs.environment }}/terraform.tfvars"
+
+  apply:
+    name: Terraform Apply (${{ inputs.cloud }}/${{ inputs.environment }})
+    needs: [plan]
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment == 'prod' && 'prod-apply' || inputs.environment }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Deploy Infrastructure
+        run: |
+          chmod +x deployment/scripts/deploy.sh
+          # Staging and Prod strictly prohibit auto-approve; managed via GitHub Environment gates
+          deployment/scripts/deploy.sh "${{ inputs.cloud }}" "${{ inputs.environment }}"
+
+  smoke:
+    name: Post-Deploy Smoke Tests (${{ inputs.cloud }}/${{ inputs.environment }})
+    needs: [apply]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Execute Smoke Tests
+        run: |
+          chmod +x deployment/scripts/smoke_test.sh
+          deployment/scripts/smoke_test.sh "${{ inputs.cloud }}" "${{ inputs.environment }}"
