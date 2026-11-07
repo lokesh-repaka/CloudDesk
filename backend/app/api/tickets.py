@@ -18,12 +18,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents.graph import run_support_workflow
 from agents.state import create_initial_support_state
+from agents.tracer import WorkflowTracer
 from backend.app.core.database import get_db_session
 from backend.app.core.security import AuthenticatedUser, require_role
 from backend.app.models.entities import (
     Customer,
     Escalation,
     Ticket,
+    WorkflowEvent,
     WorkflowRun,
     get_utc_now,
 )
@@ -53,6 +55,7 @@ from backend.app.schemas.tickets import (
     TicketListResponse,
     TicketMessageResponse,
     TicketSummaryResponse,
+    WorkflowEventResponse,
     WorkflowRunResponse,
     WorkflowStateResponse,
 )
@@ -431,9 +434,11 @@ async def run_ticket_workflow(
     )
 
     try:
+        tracer = WorkflowTracer(ticket_id=ticket.id, workflow_id=wf_id, session=session)
         final_state = await run_support_workflow(
             initial_state,
             thread_id=f"thread-{ticket.id}-{wf_id}",
+            tracer=tracer,
         )
 
         completed = final_state.get("completed_nodes", [])
@@ -542,3 +547,47 @@ async def get_ticket_workflow_state(
         token_usage=state.get("token_usage") or {},
         error=wf_run.error,
     )
+
+
+@router.get(
+    "/{ticket_id}/events",
+    response_model=list[WorkflowEventResponse],
+    summary="Retrieve workflow execution telemetry timeline",
+)
+async def get_ticket_events(
+    ticket_id: str,
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+    current_user: Annotated[AuthenticatedUser, Depends(require_role(RoleEnum.VIEWER))],
+) -> list[WorkflowEventResponse]:
+    """Retrieve fine-grained telemetry events for a ticket's workflow runs (F13, AC-060)."""
+    ticket_repo = TicketRepository(session)
+    ticket = await ticket_repo.get(ticket_id)
+    if ticket is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket {ticket_id} not found",
+        )
+
+    stmt = (
+        select(WorkflowEvent)
+        .where(WorkflowEvent.ticket_id == ticket_id)
+        .order_by(WorkflowEvent.created_at.asc(), WorkflowEvent.id.asc())
+    )
+    result = await session.execute(stmt)
+    events = result.scalars().all()
+
+    return [
+        WorkflowEventResponse(
+            id=event.id,
+            workflow_id=event.workflow_id,
+            ticket_id=event.ticket_id,
+            event_type=event.event_type,
+            node_name=event.node_name,
+            data=event.payload or {},
+            duration_ms=event.duration_ms,
+            tokens_used=event.tokens_used,
+            cost_estimate=event.cost_estimate,
+            created_at=event.created_at,
+        )
+        for event in events
+    ]
