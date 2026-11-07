@@ -115,7 +115,7 @@ Sub-tasks in the same phase that do not share files can be open at the same time
 | Task | Branch | Status |
 |------|--------|--------|
 | P8-1 · Short-term Redis facade | `feature/memory-short-term` | Completed ✅ |
-| P8-2 · Long-term customer memory | `feature/memory-long-term` | Pending ❌ |
+| P8-2 · Long-term customer memory | `feature/memory-long-term` | Completed ✅ |
 | P8-3 · Recall and record service | `feature/memory-service` | Pending ❌ |
 
 ---
