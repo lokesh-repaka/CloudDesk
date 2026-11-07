@@ -53,7 +53,7 @@ async def resolution_planning(state: SupportState) -> dict[str, Any]:
     4. Returns partial state dict updating resolution_plan, proposed_reply,
        resolution_actions, approval_required, and completed_nodes.
     """
-    raw_text = state.get("text") or state.get("subject") or ""
+    raw_text = f"{state.get('subject') or ''} {state.get('text') or ''}".strip()
     text = str(raw_text)[:MAX_PAYLOAD_LENGTH]
     category = state.get("category")
     severity = state.get("severity")
@@ -148,7 +148,7 @@ async def risk_check(state: SupportState) -> dict[str, Any]:
     5. Returns partial state dict updating risk_level, escalation_required, approval_required,
        approval_status, and completed_nodes.
     """
-    raw_text = state.get("text") or state.get("subject") or ""
+    raw_text = f"{state.get('subject') or ''} {state.get('text') or ''}".strip()
     text = str(raw_text)[:MAX_PAYLOAD_LENGTH]
     category = state.get("category")
     severity = state.get("severity")

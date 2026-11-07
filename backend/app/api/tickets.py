@@ -9,14 +9,24 @@ Provides:
 - POST /api/v1/tickets/{id}/escalate: Manual or policy ticket escalation
 """
 
+import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from agents.graph import run_support_workflow
+from agents.state import create_initial_support_state
 from backend.app.core.database import get_db_session
 from backend.app.core.security import AuthenticatedUser, require_role
-from backend.app.models.entities import Customer, Escalation, Ticket
+from backend.app.models.entities import (
+    Customer,
+    Escalation,
+    Ticket,
+    WorkflowRun,
+    get_utc_now,
+)
 from backend.app.repositories.customer_repo import CustomerRepository
 from backend.app.repositories.ticket_repo import (
     TicketMessageRepository,
@@ -30,6 +40,7 @@ from backend.app.schemas.common import (
     RoleEnum,
     SeverityEnum,
     TicketStatusEnum,
+    WorkflowStatusEnum,
 )
 from backend.app.schemas.tickets import (
     EscalateRequest,
@@ -42,12 +53,16 @@ from backend.app.schemas.tickets import (
     TicketListResponse,
     TicketMessageResponse,
     TicketSummaryResponse,
+    WorkflowRunResponse,
+    WorkflowStateResponse,
 )
 
 router = APIRouter(tags=["tickets"])
 
 
-def _format_ticket_summary(ticket: Ticket, customer: Customer | None = None) -> TicketSummaryResponse:
+def _format_ticket_summary(
+    ticket: Ticket, customer: Customer | None = None
+) -> TicketSummaryResponse:
     """Format ORM Ticket entity into TicketSummaryResponse envelope safely without lazy I/O."""
     cust = customer if customer is not None else ticket.__dict__.get("customer")
     return TicketSummaryResponse(
@@ -68,7 +83,9 @@ def _format_ticket_summary(ticket: Ticket, customer: Customer | None = None) -> 
     )
 
 
-def _format_ticket_detail(ticket: Ticket, customer: Customer | None = None) -> TicketDetailResponse:
+def _format_ticket_detail(
+    ticket: Ticket, customer: Customer | None = None
+) -> TicketDetailResponse:
     """Format ORM Ticket entity with conversation messages into TicketDetailResponse."""
     cust = customer if customer is not None else ticket.__dict__.get("customer")
     messages_list = ticket.__dict__.get("messages") or []
@@ -136,7 +153,9 @@ async def create_ticket(
     ticket_data = {
         "customer_id": payload.customer_id,
         "subject": payload.subject,
-        "channel": payload.channel.value if hasattr(payload.channel, "value") else str(payload.channel),
+        "channel": payload.channel.value
+        if hasattr(payload.channel, "value")
+        else str(payload.channel),
         "status": TicketStatusEnum.NEW.value,
         "severity": SeverityEnum.MEDIUM.value,
         "category": CategoryEnum.OTHER.value,
@@ -314,13 +333,19 @@ async def escalate_ticket(
         ticket_id=ticket.id,
         target_team=payload.target_team,
         policy_reason=payload.policy_reason,
-        severity=payload.severity.value if hasattr(payload.severity, "value") else str(payload.severity),
+        severity=payload.severity.value
+        if hasattr(payload.severity, "value")
+        else str(payload.severity),
         status=EscalationStatusEnum.OPEN.value,
     )
     session.add(escalation)
 
     ticket.status = TicketStatusEnum.ESCALATED.value
-    ticket.severity = payload.severity.value if hasattr(payload.severity, "value") else str(payload.severity)
+    ticket.severity = (
+        payload.severity.value
+        if hasattr(payload.severity, "value")
+        else str(payload.severity)
+    )
     await session.commit()
     await session.refresh(escalation)
 
@@ -332,4 +357,188 @@ async def escalate_ticket(
         severity=payload.severity,
         status=escalation.status,
         created_at=escalation.created_at,
+    )
+
+
+# ============================================================================
+# Autonomous LangGraph Workflow Run & State Polling (P10-5)
+# ============================================================================
+
+
+@router.post(
+    "/{ticket_id}/run",
+    response_model=WorkflowRunResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Trigger autonomous LangGraph agent workflow",
+)
+async def run_ticket_workflow(
+    ticket_id: str,
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+    current_user: Annotated[AuthenticatedUser, Depends(require_role(RoleEnum.AGENT))],
+) -> WorkflowRunResponse:
+    """Initiate an autonomous LangGraph agent workflow run for a ticket (AC-012, API_CONTRACT §3.4)."""
+    ticket_repo = TicketRepository(session)
+    ticket = await ticket_repo.get_with_messages(ticket_id)
+    if ticket is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket {ticket_id} not found",
+        )
+
+    if ticket.status == TicketStatusEnum.WAITING_ON_APPROVAL.value:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot start workflow: ticket {ticket_id} is currently waiting on approval.",
+        )
+
+    wf_id = f"wf-{uuid.uuid4().hex[:12]}"
+    now_utc = get_utc_now()
+    wf_run = WorkflowRun(
+        id=wf_id,
+        ticket_id=ticket.id,
+        status=WorkflowStatusEnum.RUNNING.value,
+        current_node="understand_ticket",
+        completed_nodes=[],
+        state={},
+        started_at=now_utc,
+    )
+    session.add(wf_run)
+    ticket.status = TicketStatusEnum.IN_PROGRESS.value
+    await session.commit()
+
+    # Extract ticket text and customer plan
+    text = ""
+    if ticket.messages:
+        text = "\n\n".join(m.body for m in ticket.messages if m.body)
+    if not text:
+        text = ticket.subject
+
+    plan_name = "free"
+    if ticket.customer and ticket.customer.plan:
+        plan_name = (
+            ticket.customer.plan.value
+            if hasattr(ticket.customer.plan, "value")
+            else str(ticket.customer.plan)
+        )
+
+    initial_state = create_initial_support_state(
+        ticket_id=ticket.id,
+        customer_id=ticket.customer_id,
+        subject=ticket.subject,
+        text=text,
+        customer_plan=plan_name,
+        workflow_id=wf_id,
+    )
+
+    try:
+        final_state = await run_support_workflow(
+            initial_state,
+            thread_id=f"thread-{ticket.id}-{wf_id}",
+        )
+
+        completed = final_state.get("completed_nodes", [])
+        wf_run.completed_nodes = completed
+        wf_run.current_node = final_state.get("current_node") or (
+            completed[-1] if completed else None
+        )
+        wf_run.state = final_state
+        wf_run.completed_at = get_utc_now()
+
+        if final_state.get("approval_required"):
+            wf_run.status = WorkflowStatusEnum.WAITING_ON_APPROVAL.value
+            ticket.status = TicketStatusEnum.WAITING_ON_APPROVAL.value
+        elif final_state.get("escalation_required"):
+            wf_run.status = WorkflowStatusEnum.ESCALATED.value
+            ticket.status = TicketStatusEnum.ESCALATED.value
+        else:
+            wf_run.status = WorkflowStatusEnum.COMPLETED.value
+
+        if final_state.get("summary"):
+            ticket.resolution_summary = str(final_state.get("summary"))
+
+        await session.commit()
+    except Exception as exc:  # noqa: BLE001
+        wf_run.status = WorkflowStatusEnum.FAILED.value
+        wf_run.error = str(exc)
+        await session.commit()
+
+    return WorkflowRunResponse(
+        ticket_id=ticket.id,
+        workflow_id=wf_id,
+        status=WorkflowStatusEnum(wf_run.status),
+        started_at=wf_run.started_at,
+    )
+
+
+@router.get(
+    "/{ticket_id}/workflow",
+    response_model=WorkflowStateResponse,
+    summary="Poll LangGraph runtime workflow state",
+)
+async def get_ticket_workflow_state(
+    ticket_id: str,
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+    current_user: Annotated[AuthenticatedUser, Depends(require_role(RoleEnum.VIEWER))],
+) -> WorkflowStateResponse:
+    """Poll the active or completed LangGraph workflow execution state for a ticket (AC-060, AC-061)."""
+    ticket_repo = TicketRepository(session)
+    ticket = await ticket_repo.get(ticket_id)
+    if ticket is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket {ticket_id} not found",
+        )
+
+    stmt = (
+        select(WorkflowRun)
+        .where(WorkflowRun.ticket_id == ticket_id)
+        .order_by(WorkflowRun.created_at.desc())
+    )
+    result = await session.execute(stmt)
+    wf_run = result.scalars().first()
+
+    if wf_run is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Workflow run for ticket {ticket_id} not found",
+        )
+
+    state = wf_run.state or {}
+
+    cls_data = state.get("classification")
+    if not isinstance(cls_data, dict) and state.get("category"):
+        cls_data = {"category": state.get("category")}
+
+    sev_data = state.get("severity_assessment")
+    if not isinstance(sev_data, dict):
+        if state.get("severity"):
+            sev_data = {"severity": state.get("severity")}
+        else:
+            sev_data = None
+
+    esc_data = state.get("escalation_decision")
+    if not isinstance(esc_data, dict) and state.get("escalation_required"):
+        esc_data = {
+            "escalation_required": state.get("escalation_required"),
+            "target_team": state.get("escalation_team"),
+            "reason": state.get("escalation_reason"),
+        }
+
+    return WorkflowStateResponse(
+        ticket_id=wf_run.ticket_id,
+        workflow_id=wf_run.id,
+        status=WorkflowStatusEnum(wf_run.status),
+        current_node=wf_run.current_node,
+        completed_nodes=wf_run.completed_nodes or [],
+        classification=cls_data,
+        severity=sev_data,
+        diagnosis=state.get("diagnosis")
+        if isinstance(state.get("diagnosis"), dict)
+        else None,
+        resolution_plan=state.get("resolution_plan")
+        if isinstance(state.get("resolution_plan"), dict)
+        else None,
+        escalation=esc_data,
+        token_usage=state.get("token_usage") or {},
+        error=wf_run.error,
     )

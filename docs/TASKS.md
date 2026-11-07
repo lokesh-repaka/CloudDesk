@@ -149,7 +149,7 @@ Sub-tasks in the same phase that do not share files can be open at the same time
 | P10-2 · Supervisor graph nodes | `feature/graph-nodes-supervisor` | Completed ✅ |
 | P10-3 · Investigate graph nodes | `feature/graph-nodes-investigate` | Completed ✅ |
 | P10-4 · Resolution and risk nodes | `feature/graph-nodes-resolution` | Completed ✅ |
-| P10-5 · Graph wiring and run API | `feature/graph-run-api` | Pending ❌ |
+| P10-5 · Graph wiring and run API | `feature/graph-run-api` | Completed ✅ |
 | P10-6 · Workflow tracer and events API | `feature/workflow-tracer-events` | Pending ❌ |
 
 ---

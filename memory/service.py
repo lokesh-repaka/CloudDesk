@@ -155,14 +155,18 @@ class MemoryService:
                 customer_id.strip(), items_to_record, scrub_secrets=True
             )
 
-        session_factory = get_session_factory()
-        async with session_factory() as sess:
-            ltm = LongTermMemory(session=sess)
-            saved = await ltm.record_notes(
-                customer_id.strip(), items_to_record, scrub_secrets=True
-            )
-            await sess.commit()
-            return saved
+        try:
+            session_factory = get_session_factory()
+            async with session_factory() as sess:
+                ltm = LongTermMemory(session=sess)
+                saved = await ltm.record_notes(
+                    customer_id.strip(), items_to_record, scrub_secrets=True
+                )
+                await sess.commit()
+                return saved
+        except (SQLAlchemyError, RuntimeError, OSError) as exc:
+            logger.warning("Failed to record resolution memory in DB session: %s", exc)
+            return []
 
     # =========================================================================
     # 3. Short-Term Memory Coordination
