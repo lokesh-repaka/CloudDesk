@@ -1,0 +1,18 @@
+[
+  {
+    "id": "inc-101",
+    "title": "SAML SSO Authentication Disruption",
+    "service": "clouddesk-identity",
+    "status": "investigating",
+    "severity": "critical",
+    "impact_summary": "Enterprise users encountering authentication failures when logging in via Okta and Azure AD SSO gateways."
+  },
+  {
+    "id": "inc-102",
+    "title": "US-East Storage Cluster Read-Only Mode",
+    "service": "clouddesk-storage",
+    "status": "resolved",
+    "severity": "high",
+    "impact_summary": "Transient metadata lock caused quota check failures for uploads in us-east-1."
+  }
+]

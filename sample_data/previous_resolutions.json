@@ -1,0 +1,67 @@
+[
+  {
+    "id": "res-101",
+    "ticket_id": "CD-0991",
+    "category": "login_issue",
+    "subject": "Okta SSO certificate renewal failure",
+    "resolution_summary": "Rotated IdP X.509 certificate in Okta Admin Console and updated CloudDesk SSO SAML metadata URL.",
+    "troubleshooting_steps": [
+      "1. Verify IdP metadata XML expiration timestamp.",
+      "2. Upload renewed signing certificate to Identity Provider configuration.",
+      "3. Trigger test SAML assertion flow."
+    ],
+    "customer_reply": "We updated the IdP signing certificate metadata and all enterprise members can now sign in via SSO."
+  },
+  {
+    "id": "res-102",
+    "ticket_id": "CD-0992",
+    "category": "billing",
+    "subject": "Mid-cycle seat reduction refund",
+    "resolution_summary": "Calculated prorated credit for 2 downgraded seats and credited back to customer account balance.",
+    "troubleshooting_steps": [
+      "1. Calculate seat differential against billing period duration.",
+      "2. Create approval request for credit issuance.",
+      "3. Apply credit to account billing invoice."
+    ],
+    "customer_reply": "We have credited your invoice for the unused seats. Your updated invoice balance is now reflected in your billing portal."
+  },
+  {
+    "id": "res-103",
+    "ticket_id": "CD-0993",
+    "category": "api_failure",
+    "subject": "Sync script encountering 429 Too Many Requests",
+    "resolution_summary": "Added exponential backoff with jitter and increased request batch size to reduce call frequency.",
+    "troubleshooting_steps": [
+      "1. Inspect response Retry-After header.",
+      "2. Implement exponential backoff in sync worker script.",
+      "3. Consolidate individual item queries into batch endpoints."
+    ],
+    "customer_reply": "The API rate limit is 120 requests/minute. We recommend adding backoff handling to your sync client as detailed in our API docs."
+  },
+  {
+    "id": "res-104",
+    "ticket_id": "CD-0994",
+    "category": "storage_quota",
+    "subject": "Workspace file uploads blocked at quota threshold",
+    "resolution_summary": "Purged soft-deleted files from trash and upgraded storage tier.",
+    "troubleshooting_steps": [
+      "1. Run workspace storage breakdown report.",
+      "2. Empty workspace trash to reclaim unpurged deleted bytes.",
+      "3. Upgrade quota tier if additional capacity is required."
+    ],
+    "customer_reply": "Emptying your workspace trash bin reclaimed 1.5 GB of storage space, restoring upload capabilities."
+  },
+  {
+    "id": "res-105",
+    "ticket_id": "CD-0995",
+    "category": "workspace_permissions",
+    "subject": "External collaborator invite button grayed out",
+    "resolution_summary": "Enabled external collaboration policy in Workspace Settings under Security & Sharing.",
+    "troubleshooting_steps": [
+      "1. Open Workspace Settings > Sharing Policies.",
+      "2. Toggle 'Allow external link sharing' to enabled.",
+      "3. Save changes and retry inviting external collaborator."
+    ],
+    "customer_reply": "Your workspace administrator has enabled external sharing permissions for your team workspace."
+  }
+]

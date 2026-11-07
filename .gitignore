@@ -1,0 +1,36 @@
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables
+.env
+*.env
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local databases & checkpoints
+data/
+
+# Specification documents & prompts
+user-stories.md
+docs/user-stories.md
+acceptance-criteria.md
+docs/acceptance-criteria.md
+architecture.md
+docs/architecture.md
+design.md
+docs/design.md
+docs/prompts/
+prompts/
+
