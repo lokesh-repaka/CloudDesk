@@ -3,3 +3,7 @@ export * from "./TicketConversation";
 export * from "./CustomerDossier";
 export * from "./WorkflowPanel";
 export * from "./WorkflowSteps";
+export * from "./ApproveModal";
+export * from "./RejectModal";
+export * from "./ReplyModal";
+export * from "./EscalateModal";
