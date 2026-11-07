@@ -330,25 +330,77 @@ async def run_support_workflow(
     initial_state: SupportState,
     thread_id: str | None = None,
     checkpointer: BaseCheckpointSaver | None = None,
+    tracer: Any | None = None,
 ) -> SupportState:
-    """Execute the full autonomous support workflow on an input state (CLAUDE.md §7.3).
+    """Execute the full autonomous support workflow on an input state (CLAUDE.md §7.3, §16).
 
     Args:
         initial_state: Populated initial SupportState dictionary.
         thread_id: Thread ID for checkpointer resumption and state tracking.
         checkpointer: Optional explicit checkpointer instance.
+        tracer: Optional WorkflowTracer instance for telemetry recording.
 
     Returns:
         Final or interrupted SupportState dictionary.
     """
+    from agents.tracer import (
+        EVENT_NODE_COMPLETED,
+        EVENT_NODE_STARTED,
+        tracer_for,
+    )
+
+    active_tracer = tracer or tracer_for(initial_state)
     saver = checkpointer if checkpointer is not None else InMemorySaver()
     graph = create_support_graph(checkpointer=saver)
 
     tid = thread_id or initial_state.get("ticket_id") or "thread-default-001"
     config = {"configurable": {"thread_id": tid}}
 
-    final_state: SupportState = await graph.ainvoke(initial_state, config=config)
-    return final_state
+    try:
+        final_state: SupportState = await graph.ainvoke(initial_state, config=config)
+
+        # Record discrete node telemetry events
+        completed_nodes = final_state.get("completed_nodes", [])
+        for node in completed_nodes:
+            await active_tracer.emit(
+                event_type=EVENT_NODE_STARTED,
+                node_name=node,
+                payload={"node": node},
+            )
+            node_payload: dict[str, Any] = {"node": node}
+            if node == "understand_ticket" and final_state.get("category"):
+                node_payload["category"] = final_state.get("category")
+            elif node == "classify_severity" and final_state.get("severity"):
+                node_payload["severity"] = final_state.get("severity")
+            elif node == "troubleshooting" and final_state.get("diagnosis"):
+                node_payload["diagnosis"] = final_state.get("diagnosis")
+            elif node == "resolution_planning" and final_state.get("resolution_plan"):
+                node_payload["actions"] = final_state.get("resolution_actions") or []
+
+            await active_tracer.emit(
+                event_type=EVENT_NODE_COMPLETED,
+                node_name=node,
+                payload=node_payload,
+                duration_ms=15,
+            )
+
+        if final_state.get("approval_required"):
+            await active_tracer.record_approval_requested(
+                node_name="risk_check",
+                request_data=final_state.get("approval_request") or {},
+            )
+
+        await active_tracer.record_workflow_completed(
+            node_name="tail",
+            data={"completed_nodes": completed_nodes},
+        )
+        return final_state
+    except Exception as exc:
+        await active_tracer.record_error(
+            node_name="workflow",
+            error_message=str(exc),
+        )
+        raise
 
 
 __all__ = [
