@@ -241,6 +241,7 @@ def rule_severity(
     category: CategoryEnum | str | None = None,
     customer_plan: str | None = None,
     is_active_outage: bool = False,
+    is_vip: bool = False,
 ) -> SeverityEnum:
     """Enforce deterministic policy severity floors.
 
@@ -269,6 +270,10 @@ def rule_severity(
             )
         except ValueError:
             cat_enum = None
+
+    # VIP Customer floor: at least MEDIUM (level 2)
+    if is_vip:
+        floor_level = max(floor_level, _SEVERITY_LEVELS[SeverityEnum.MEDIUM])
 
     # Enterprise Outage floor: CRITICAL
     if is_active_outage and (customer_plan or "").lower() == "enterprise":
@@ -377,8 +382,9 @@ def rule_category(text: str) -> CategoryEnum | None:
         (
             CategoryEnum.BILLING,
             [
+                r"\bbilling\b",
+                r"\binvoices?\b",
                 r"\bbilling refund\b",
-                r"\binvoice\b",
                 r"\bchargeback\b",
                 r"credit card",
                 r"subscription price",
