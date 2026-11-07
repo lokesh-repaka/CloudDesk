@@ -1,0 +1,136 @@
+# ==============================================================================
+# CloudDesk Support Platform — Complete Local Stack Compose (P14-3, CLAUDE.md §15)
+# Topology: frontend -> backend -> redis, qdrant
+# Dependencies: depends_on with condition: service_healthy
+# Storage: named persistent volumes; Restart: unless-stopped
+# ==============================================================================
+
+name: clouddesk
+
+services:
+  # ----------------------------------------------------------------------------
+  # Redis Cache & Fast State Store (F11, Memory & Rate-Limiting)
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: clouddesk-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - clouddesk-network
+
+  # ----------------------------------------------------------------------------
+  # Qdrant Vector Search Engine (F4, Hybrid Retrieval Knowledge Base)
+  # ----------------------------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:v1.12.1
+    container_name: clouddesk-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6333/healthz || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - clouddesk-network
+
+  # ----------------------------------------------------------------------------
+  # CloudDesk Backend API & Multi-Agent LangGraph Runtime (FastAPI)
+  # ----------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: clouddesk-backend:latest
+    container_name: clouddesk-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: production
+      DEMO_MODE: "true"
+      PORT: "8000"
+      REDIS_URL: redis://redis:6379/0
+      USE_FAKE_REDIS: "false"
+      VECTOR_STORE: memory
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: "6333"
+      LLM_PROVIDER: fake
+      DATABASE_URL: sqlite+aiosqlite:////app/database/clouddesk.db
+      CHECKPOINT_DB_PATH: /app/database/checkpoints.db
+      CORS_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000"
+    volumes:
+      - backend_data:/app/database
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - clouddesk-network
+
+  # ----------------------------------------------------------------------------
+  # CloudDesk Frontend Console (Next.js Standalone)
+  # ----------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: clouddesk-frontend:latest
+    container_name: clouddesk-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      INTERNAL_API_URL: http://backend:8000
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - clouddesk-network
+
+# ------------------------------------------------------------------------------
+# Persistent Storage Volumes (CLAUDE.md §15)
+# ------------------------------------------------------------------------------
+volumes:
+  redis_data:
+    name: clouddesk_redis_data
+  qdrant_data:
+    name: clouddesk_qdrant_data
+  backend_data:
+    name: clouddesk_backend_data
+
+# ------------------------------------------------------------------------------
+# Dedicated Bridge Network (CLAUDE.md §15, CWE-668)
+# ------------------------------------------------------------------------------
+networks:
+  clouddesk-network:
+    name: clouddesk_network
+    driver: bridge
+
