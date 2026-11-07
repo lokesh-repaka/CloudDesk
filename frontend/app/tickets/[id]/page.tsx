@@ -3,8 +3,14 @@
 import React, { use, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { TicketDetail, CustomerDetail, WorkflowStateResponse } from "@/lib/types";
+import {
+  TicketDetail,
+  CustomerDetail,
+  WorkflowStateResponse,
+  WorkflowEvent,
+} from "@/lib/types";
 import { useAuth } from "@/lib/auth";
+import { usePolling } from "@/lib/usePolling";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import {
@@ -27,6 +33,7 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
   const [ticket, setTicket] = useState<TicketDetail | null>(null);
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
   const [workflowState, setWorkflowState] = useState<WorkflowStateResponse | null>(null);
+  const [events, setEvents] = useState<WorkflowEvent[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingCustomer, setIsLoadingCustomer] = useState(false);
@@ -62,8 +69,15 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
         const wfState = await api.tickets.getWorkflowState(ticketId);
         setWorkflowState(wfState);
       } catch {
-        // No active workflow exists yet - normal for un-run tickets
         setWorkflowState(null);
+      }
+
+      // 4. Fetch telemetry events
+      try {
+        const evts = await api.tickets.getEvents(ticketId);
+        setEvents(evts);
+      } catch {
+        setEvents([]);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load ticket details");
@@ -75,6 +89,51 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
   useEffect(() => {
     fetchTicketData();
   }, [fetchTicketData]);
+
+  // Live workflow polling (2 seconds interval per AC-053 and CLAUDE.md §11)
+  const isWorkflowActive =
+    ticket?.status === "in_progress" ||
+    workflowState?.status === "running" ||
+    workflowState?.status === "waiting_on_approval" ||
+    isLoadingWorkflow;
+
+  usePolling(
+    async () => {
+      if (!ticketId) return;
+      try {
+        const state = await api.tickets.getWorkflowState(ticketId);
+        setWorkflowState(state);
+
+        try {
+          const evts = await api.tickets.getEvents(ticketId);
+          setEvents(evts);
+        } catch {
+          // Non-critical telemetry fetch fail
+        }
+
+        // Check if workflow reached terminal state or paused for approval
+        if (
+          state.status === "completed" ||
+          state.status === "waiting_on_approval" ||
+          state.status === "failed"
+        ) {
+          const updatedTicket = await api.tickets.get(ticketId);
+          setTicket(updatedTicket);
+
+          // Stop polling if fully completed
+          if (state.status === "completed" || state.status === "failed") {
+            return false;
+          }
+        }
+      } catch {
+        // No active workflow
+      }
+    },
+    {
+      intervalMs: 2000,
+      enabled: isWorkflowActive,
+    }
+  );
 
   // Dispatch message via composer
   const handleSendMessage = async (body: string) => {
@@ -97,6 +156,14 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
       await api.tickets.runWorkflow(ticketId);
       const state = await api.tickets.getWorkflowState(ticketId);
       setWorkflowState(state);
+
+      try {
+        const evts = await api.tickets.getEvents(ticketId);
+        setEvents(evts);
+      } catch {
+        // Telemetry events non-blocking
+      }
+
       const updated = await api.tickets.get(ticketId);
       setTicket(updated);
       setActionNotice("LangGraph workflow analysis initiated.");
@@ -203,7 +270,7 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
 
       {/* Three-Column Agent Workspace Layout (AC-052 & CLAUDE.md §11) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Messages & Composer (5 cols on lg/xl) */}
+        {/* Left Column: Messages & Composer */}
         <div className="lg:col-span-4 xl:col-span-5 flex flex-col h-[780px]">
           <TicketConversation
             messages={ticket.messages || []}
@@ -213,16 +280,17 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
           />
         </div>
 
-        {/* Center Column: Customer 360° Dossier (3 cols on lg, 3.5 cols on xl) */}
+        {/* Center Column: Customer 360° Dossier */}
         <div className="lg:col-span-4 xl:col-span-3 flex flex-col h-[780px]">
           <CustomerDossier customer={customer} isLoading={isLoadingCustomer} />
         </div>
 
-        {/* Right Column: Workflow Steps, Diagnosis, Citations & Actions (4 cols on lg, 3.5 cols on xl) */}
+        {/* Right Column: Workflow Steps, Diagnosis, Citations & Actions */}
         <div className="lg:col-span-4 xl:col-span-4 flex flex-col h-[780px]">
           <WorkflowPanel
             ticket={ticket}
             workflowState={workflowState}
+            events={events}
             isLoadingWorkflow={isLoadingWorkflow}
             onRunWorkflow={handleRunWorkflow}
             onApprove={handleApprove}
