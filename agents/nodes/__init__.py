@@ -12,12 +12,14 @@ from agents.nodes.investigate import (
     troubleshooting,
 )
 from agents.nodes.resolution import (
+    NODE_EXECUTE_RESOLUTION,
     NODE_MEMORY_UPDATE,
     NODE_RESOLUTION_PLANNING,
     NODE_RISK_CHECK,
     ROUTE_ESCALATION,
     ROUTE_EXECUTE_RESOLUTION,
     ROUTE_HUMAN_APPROVAL,
+    execute_resolution,
     memory_update,
     resolution_planning,
     risk_check,
@@ -35,6 +37,7 @@ from agents.nodes.supervisor import (
 __all__ = [
     "NODE_CLASSIFY_SEVERITY",
     "NODE_CUSTOMER_CONTEXT",
+    "NODE_EXECUTE_RESOLUTION",
     "NODE_KNOWLEDGE_RETRIEVAL",
     "NODE_MEMORY_UPDATE",
     "NODE_RESOLUTION_PLANNING",
@@ -47,6 +50,7 @@ __all__ = [
     "ROUTE_HUMAN_APPROVAL",
     "classify_severity",
     "customer_context",
+    "execute_resolution",
     "knowledge_retrieval",
     "memory_update",
     "resolution_planning",
