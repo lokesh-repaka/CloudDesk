@@ -8,6 +8,7 @@ import {
   CustomerDetail,
   WorkflowStateResponse,
   WorkflowEvent,
+  Severity,
 } from "@/lib/types";
 import { useAuth } from "@/lib/auth";
 import { usePolling } from "@/lib/usePolling";
@@ -18,6 +19,10 @@ import {
   TicketConversation,
   CustomerDossier,
   WorkflowPanel,
+  ApproveModal,
+  RejectModal,
+  ReplyModal,
+  EscalateModal,
 } from "@/components/tickets";
 
 interface TicketPageProps {
@@ -34,12 +39,19 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
   const [workflowState, setWorkflowState] = useState<WorkflowStateResponse | null>(null);
   const [events, setEvents] = useState<WorkflowEvent[]>([]);
+  const [pendingApprovalId, setPendingApprovalId] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingCustomer, setIsLoadingCustomer] = useState(false);
   const [isLoadingWorkflow, setIsLoadingWorkflow] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
+
+  // Modal open states
+  const [isApproveOpen, setIsApproveOpen] = useState(false);
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [isReplyOpen, setIsReplyOpen] = useState(false);
+  const [isEscalateOpen, setIsEscalateOpen] = useState(false);
 
   const fetchTicketData = useCallback(async () => {
     try {
@@ -57,7 +69,6 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
           const customerData = await api.customers.get(ticketData.customer_id);
           setCustomer(customerData);
         } catch {
-          // If customer fetch fails, preserve ticket detail
           setCustomer(null);
         } finally {
           setIsLoadingCustomer(false);
@@ -78,6 +89,18 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
         setEvents(evts);
       } catch {
         setEvents([]);
+      }
+
+      // 5. Check for active pending approvals
+      try {
+        const approvals = await api.approvals.list({ ticket_id: ticketId, status: "pending" });
+        if (approvals && approvals.length > 0) {
+          setPendingApprovalId(approvals[0].id);
+        } else {
+          setPendingApprovalId(null);
+        }
+      } catch {
+        setPendingApprovalId(null);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load ticket details");
@@ -111,6 +134,18 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
           // Non-critical telemetry fetch fail
         }
 
+        // Check for approvals during poll
+        if (state.status === "waiting_on_approval") {
+          try {
+            const approvals = await api.approvals.list({ ticket_id: ticketId, status: "pending" });
+            if (approvals && approvals.length > 0) {
+              setPendingApprovalId(approvals[0].id);
+            }
+          } catch {
+            // Ignore
+          }
+        }
+
         // Check if workflow reached terminal state or paused for approval
         if (
           state.status === "completed" ||
@@ -135,13 +170,12 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
     }
   );
 
-  // Dispatch message via composer
+  // Dispatch message via inline composer
   const handleSendMessage = async (body: string) => {
     if (!canAct) {
       throw new Error("Viewer role cannot dispatch messages (AC-054)");
     }
     await api.tickets.reply(ticketId, { message: body });
-    // Refresh ticket conversation
     const updated = await api.tickets.get(ticketId);
     setTicket(updated);
     setActionNotice("Reply dispatched successfully to customer.");
@@ -161,7 +195,7 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
         const evts = await api.tickets.getEvents(ticketId);
         setEvents(evts);
       } catch {
-        // Telemetry events non-blocking
+        // Non-blocking telemetry
       }
 
       const updated = await api.tickets.get(ticketId);
@@ -175,22 +209,45 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
     }
   };
 
-  const handleApprove = () => {
-    if (!canAct) return;
-    setActionNotice("Approval action triggered. (Configured in Phase 13-3)");
+  // Modal Actions
+  const handleConfirmApprove = async (
+    approvalId: string,
+    reason?: string,
+    modifications?: Record<string, unknown>
+  ) => {
+    await api.approvals.approve(approvalId, { reason, modifications });
+    setActionNotice("Proposed action approved. Workflow execution resumed.");
     setTimeout(() => setActionNotice(null), 4000);
+    await fetchTicketData();
   };
 
-  const handleReject = () => {
-    if (!canAct) return;
-    setActionNotice("Rejection action triggered. (Configured in Phase 13-3)");
+  const handleConfirmReject = async (approvalId: string, reason: string) => {
+    await api.approvals.reject(approvalId, { reason });
+    setActionNotice("Action rejected. Ticket routed to policy escalation.");
     setTimeout(() => setActionNotice(null), 4000);
+    await fetchTicketData();
   };
 
-  const handleEscalate = () => {
-    if (!canAct) return;
-    setActionNotice("Escalation modal triggered. (Configured in Phase 13-3)");
+  const handleConfirmReply = async (message: string, internalNote?: string) => {
+    await api.tickets.reply(ticketId, { message, internal_note: internalNote });
+    setActionNotice("Customer reply dispatched successfully.");
     setTimeout(() => setActionNotice(null), 4000);
+    await fetchTicketData();
+  };
+
+  const handleConfirmEscalate = async (
+    targetTeam: string,
+    policyReason: string,
+    severity?: Severity
+  ) => {
+    await api.tickets.escalate(ticketId, {
+      target_team: targetTeam,
+      policy_reason: policyReason,
+      severity,
+    });
+    setActionNotice(`Ticket escalated to ${targetTeam}.`);
+    setTimeout(() => setActionNotice(null), 4000);
+    await fetchTicketData();
   };
 
   // Loading skeleton
@@ -244,6 +301,19 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
     );
   }
 
+  const proposedAction =
+    workflowState?.resolution_plan?.action ||
+    (workflowState?.resolution_plan as any)?.action_name ||
+    "create_refund_request";
+  const proposedPayload =
+    (workflowState?.resolution_plan?.action_payload as Record<string, unknown>) ||
+    (workflowState?.resolution_plan?.parameters as Record<string, unknown>) ||
+    null;
+  const proposedReply =
+    workflowState?.resolution_plan?.customer_reply ||
+    (workflowState?.resolution_plan?.summary as string) ||
+    "";
+
   return (
     <div className="space-y-6">
       {/* Role Banner for Viewers (AC-054) */}
@@ -293,13 +363,55 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
             events={events}
             isLoadingWorkflow={isLoadingWorkflow}
             onRunWorkflow={handleRunWorkflow}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            onEscalate={handleEscalate}
+            onApprove={() => setIsApproveOpen(true)}
+            onReject={() => setIsRejectOpen(true)}
+            onSendReply={() => setIsReplyOpen(true)}
+            onEscalate={() => setIsEscalateOpen(true)}
             canAct={canAct}
           />
         </div>
       </div>
+
+      {/* Action Modals (P13-3) */}
+      <ApproveModal
+        isOpen={isApproveOpen}
+        onClose={() => setIsApproveOpen(false)}
+        ticketId={ticket.id}
+        approvalId={pendingApprovalId || `appr-${ticket.id}`}
+        actionName={String(proposedAction)}
+        actionPayload={proposedPayload}
+        proposedReply={proposedReply}
+        onApprove={handleConfirmApprove}
+        canAct={canAct}
+      />
+
+      <RejectModal
+        isOpen={isRejectOpen}
+        onClose={() => setIsRejectOpen(false)}
+        ticketId={ticket.id}
+        approvalId={pendingApprovalId || `appr-${ticket.id}`}
+        actionName={String(proposedAction)}
+        onReject={handleConfirmReject}
+        canAct={canAct}
+      />
+
+      <ReplyModal
+        isOpen={isReplyOpen}
+        onClose={() => setIsReplyOpen(false)}
+        ticketId={ticket.id}
+        initialMessage={proposedReply}
+        onSendReply={handleConfirmReply}
+        canAct={canAct}
+      />
+
+      <EscalateModal
+        isOpen={isEscalateOpen}
+        onClose={() => setIsEscalateOpen(false)}
+        ticketId={ticket.id}
+        currentSeverity={ticket.severity}
+        onEscalate={handleConfirmEscalate}
+        canAct={canAct}
+      />
     </div>
   );
 }
