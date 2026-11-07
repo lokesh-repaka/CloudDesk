@@ -1,5 +1,11 @@
 """CloudDesk Pydantic and schema definitions."""
 
+from backend.app.schemas.approvals import (
+    ApprovalDecisionResponse,
+    ApprovalRequestResponse,
+    ApproveDecisionRequest,
+    RejectDecisionRequest,
+)
 from backend.app.schemas.auth import (
     DemoTokensResponse,
     DemoTokenUser,
@@ -70,7 +76,10 @@ from backend.app.schemas.workflow import (
 )
 
 __all__ = [
+    "ApprovalDecisionResponse",
+    "ApprovalRequestResponse",
     "ApprovalStatusEnum",
+    "ApproveDecisionRequest",
     "CategoryEnum",
     "ChannelEnum",
     "Classification",
@@ -99,6 +108,7 @@ __all__ = [
     "LoginRequest",
     "MemoryTypeEnum",
     "PreviousCase",
+    "RejectDecisionRequest",
     "ReplyCreate",
     "ReplyResponse",
     "RequestInfoCreate",

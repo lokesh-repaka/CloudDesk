@@ -398,15 +398,30 @@ def create_support_graph(
     )
 
 
-# Cached singleton graph instance for lightweight in-process execution
+# Cached singleton graph and checkpointer instances for lightweight in-process execution
 _default_graph: CompiledStateGraph | None = None
+_default_checkpointer: BaseCheckpointSaver | None = None
+
+
+def get_default_checkpointer() -> BaseCheckpointSaver:
+    """Return shared checkpointer instance across runtime workflow invocations."""
+    global _default_checkpointer
+    if _default_checkpointer is None:
+        _default_checkpointer = InMemorySaver()
+    return _default_checkpointer
+
+
+def reset_default_checkpointer() -> None:
+    """Reset shared checkpointer for test isolation."""
+    global _default_checkpointer
+    _default_checkpointer = None
 
 
 def get_default_support_graph() -> CompiledStateGraph:
     """Return a shared compiled support graph instance."""
     global _default_graph
     if _default_graph is None:
-        _default_graph = create_support_graph()
+        _default_graph = create_support_graph(checkpointer=get_default_checkpointer())
     return _default_graph
 
 
@@ -434,7 +449,7 @@ async def run_support_workflow(
     )
 
     active_tracer = tracer or tracer_for(initial_state)
-    saver = checkpointer if checkpointer is not None else InMemorySaver()
+    saver = checkpointer if checkpointer is not None else get_default_checkpointer()
     graph = create_support_graph(checkpointer=saver)
 
     tid = thread_id or initial_state.get("ticket_id") or "thread-default-001"
@@ -444,11 +459,25 @@ async def run_support_workflow(
         final_state: SupportState = await graph.ainvoke(initial_state, config=config)
 
         # Detect LangGraph interrupt gate (US-010, AC-035)
-        is_interrupted = bool(final_state.get("__interrupt__"))
+        raw_interrupts = final_state.get("__interrupt__")
+        is_interrupted = bool(raw_interrupts)
         if is_interrupted:
             final_state["current_node"] = NODE_HUMAN_APPROVAL
             final_state["approval_status"] = "pending"
             final_state["approval_required"] = True
+            # Sanitize Interrupt objects to JSON-serializable dicts
+            clean_interrupts: list[dict[str, Any]] = []
+            for item in raw_interrupts or []:
+                if hasattr(item, "value"):
+                    clean_interrupts.append(
+                        {"value": item.value, "id": getattr(item, "id", None)}
+                    )
+                elif isinstance(item, dict):
+                    clean_interrupts.append(item)
+                else:
+                    clean_interrupts.append({"value": str(item)})
+            final_state["__interrupt__"] = clean_interrupts
+
             if NODE_HUMAN_APPROVAL not in final_state.get("completed_nodes", []):
                 final_state["completed_nodes"] = list(
                     final_state.get("completed_nodes", [])
@@ -524,7 +553,7 @@ async def resume_support_workflow(
         tracer_for,
     )
 
-    saver = checkpointer if checkpointer is not None else InMemorySaver()
+    saver = checkpointer if checkpointer is not None else get_default_checkpointer()
     active_graph = (
         graph if graph is not None else create_support_graph(checkpointer=saver)
     )
@@ -617,8 +646,10 @@ __all__ = [
     "create_support_graph",
     "escalation",
     "execute_resolution",
+    "get_default_checkpointer",
     "get_default_support_graph",
     "human_approval",
+    "reset_default_checkpointer",
     "resume_support_workflow",
     "route_after_approval",
     "run_support_workflow",
