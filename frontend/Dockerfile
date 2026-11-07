@@ -31,6 +31,7 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN mkdir -p /app/public
 
 # Disable Next.js telemetry during container build
 ENV NEXT_TELEMETRY_DISABLED=1 \
@@ -59,7 +60,7 @@ RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
 # Copy public static assets if present
-COPY --from=builder /app/public ./public 2>/dev/null || true
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # Copy standalone server build output and static bundles
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

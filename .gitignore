@@ -34,3 +34,11 @@ docs/design.md
 docs/prompts/
 prompts/
 
+# Terraform remote state and caches (CLAUDE.md §15)
+.terraform/
+*.tfstate
+*.tfstate.*
+backend.hcl
+*.backend.hcl
+
+
