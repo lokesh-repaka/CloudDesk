@@ -1,0 +1,37 @@
+# Git
+.git
+.gitignore
+.github
+
+# Virtual Environments and Python Cache
+.venv
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Secrets and Local Configurations (CWE-200)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+
+# Node and Frontend artifacts
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/__tests__/
+
+# Operating System and IDE files
+.DS_Store
+.vscode/
+.idea/

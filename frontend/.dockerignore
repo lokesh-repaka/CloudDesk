@@ -1,0 +1,23 @@
+# Node dependencies and build output
+node_modules
+.next
+out
+build
+
+# Test suites and coverage
+__tests__
+coverage
+.nyc_output
+
+# Local environment and secrets (CWE-200)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Git and OS metadata
+.git
+.gitignore
+.DS_Store
+*.log
