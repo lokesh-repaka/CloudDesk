@@ -5,16 +5,19 @@ Provides specialist agents:
 - CustomerAgent: Aggregates customer 360 profile, workspaces, subscriptions, and memory context.
 - KnowledgeAgent: Searches knowledge base and retrieves similar resolved cases via Jaccard overlap.
 - TroubleshootingAgent: Diagnoses technical root causes and generates ordered remediation steps.
+- ResolutionAgent: Plans remediation actions, drafts customer replies, and enforces output safety.
 """
 
 from agents.specialists.customer import CustomerAgent
 from agents.specialists.knowledge import KnowledgeAgent
+from agents.specialists.resolution import ResolutionAgent
 from agents.specialists.supervisor import SupervisorAgent
 from agents.specialists.troubleshooting import TroubleshootingAgent
 
 __all__ = [
     "CustomerAgent",
     "KnowledgeAgent",
+    "ResolutionAgent",
     "SupervisorAgent",
     "TroubleshootingAgent",
 ]
