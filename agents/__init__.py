@@ -12,6 +12,14 @@ from agents.checkpointer import (
     get_sqlite_checkpointer,
     resolve_checkpointer_path,
 )
+from agents.nodes.supervisor import (
+    NODE_CLASSIFY_SEVERITY,
+    NODE_TICKET_SUMMARY,
+    NODE_UNDERSTAND_TICKET,
+    classify_severity,
+    ticket_summary,
+    understand_ticket,
+)
 from agents.prompts import (
     CUSTOMER_AGENT_SYSTEM_PROMPT,
     ESCALATION_SYSTEM_PROMPT,
@@ -58,6 +66,9 @@ __all__ = [
     "ESCALATION_RULES",
     "ESCALATION_SYSTEM_PROMPT",
     "KNOWLEDGE_AGENT_SYSTEM_PROMPT",
+    "NODE_CLASSIFY_SEVERITY",
+    "NODE_TICKET_SUMMARY",
+    "NODE_UNDERSTAND_TICKET",
     "REDACTION_MARKER",
     "RESOLUTION_SYSTEM_PROMPT",
     "SECRET_PATTERNS",
@@ -81,6 +92,7 @@ __all__ = [
     "append_list",
     "assess_risk",
     "build_prompt_with_security_preamble",
+    "classify_severity",
     "create_initial_support_state",
     "evaluate_escalation_decision",
     "get_checkpointer",
@@ -93,6 +105,8 @@ __all__ = [
     "rule_severity",
     "scan_for_injection",
     "scrub",
+    "ticket_summary",
+    "understand_ticket",
     "validate_customer_output",
     "wrap_untrusted",
 ]
