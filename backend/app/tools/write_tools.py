@@ -277,3 +277,4 @@ def register_write_tools(registry: ToolRegistry | None = None) -> list[ToolDefin
     for t in tools:
         registered.append(target_registry.register(t))
     return registered
+

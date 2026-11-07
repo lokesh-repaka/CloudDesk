@@ -45,7 +45,7 @@ ingest:
 	$(PYTHON) -m backend.app.rag.ingest
 
 mcp:
-	@echo "MCP server stub (Active in Phase 6)"
+	$(PYTHON) -m integrations.mcp.server
 
 smoke:
 	@echo "Checking health endpoint at $${BASE_URL:-http://localhost:8000}/health/live"
