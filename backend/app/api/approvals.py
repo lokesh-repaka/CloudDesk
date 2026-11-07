@@ -14,13 +14,14 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents.graph import resume_support_workflow
 from agents.tracer import WorkflowTracer
 from backend.app.core.database import get_db_session
 from backend.app.core.security import AuthenticatedUser, require_role
-from backend.app.models.entities import Ticket, WorkflowRun, get_utc_now
+from backend.app.models.entities import Escalation, Ticket, WorkflowRun, get_utc_now
 from backend.app.repositories.approval_repo import ApprovalRepository
 from backend.app.schemas.approvals import (
     ApprovalDecisionResponse,
@@ -30,6 +31,7 @@ from backend.app.schemas.approvals import (
 )
 from backend.app.schemas.common import (
     ApprovalStatusEnum,
+    EscalationStatusEnum,
     RoleEnum,
     TicketStatusEnum,
     WorkflowStatusEnum,
@@ -250,6 +252,23 @@ async def reject_request(
     ticket = await session.get(Ticket, approval.ticket_id)
     if ticket:
         ticket.status = TicketStatusEnum.ESCALATED.value
+
+    # Ensure open escalation record is recorded (AC-040, AC-044)
+    esc_stmt = select(Escalation).where(
+        Escalation.ticket_id == approval.ticket_id,
+        Escalation.status == EscalationStatusEnum.OPEN.value,
+    )
+    existing_esc = (await session.execute(esc_stmt)).scalars().first()
+    if existing_esc is None:
+        new_esc = Escalation(
+            ticket_id=approval.ticket_id,
+            workflow_id=approval.workflow_id,
+            target_team="Supervisor",
+            policy_reason=body.rejection_reason,
+            severity=ticket.severity if ticket else "high",
+            status=EscalationStatusEnum.OPEN.value,
+        )
+        session.add(new_esc)
 
     await session.commit()
     await session.refresh(approval)

@@ -37,6 +37,10 @@ from backend.app.schemas.customers import (
     SubscriptionResponse,
     WorkspaceResponse,
 )
+from backend.app.schemas.escalations import (
+    EscalationResponse,
+    EscalationStatusUpdateRequest,
+)
 from backend.app.schemas.knowledge import (
     KnowledgeArticleDetail,
     KnowledgeArticleSummary,
@@ -98,7 +102,9 @@ __all__ = [
     "EscalateRequest",
     "EscalateResponse",
     "EscalationDecision",
+    "EscalationResponse",
     "EscalationStatusEnum",
+    "EscalationStatusUpdateRequest",
     "Evidence",
     "KnowledgeArticleDetail",
     "KnowledgeArticleSummary",

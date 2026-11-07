@@ -300,12 +300,77 @@ async def execute_resolution(state: SupportState) -> dict[str, Any]:
     }
 
 
-async def escalation(state: SupportState) -> dict[str, Any]:
+async def escalation(
+    state: SupportState,
+    *,
+    session: Any = None,
+    tracer: Any = None,
+    **kwargs: Any,
+) -> dict[str, Any]:
     """Execute specialized team escalation handoff node (US-012, AC-043, AC-044)."""
     team = state.get("escalation_team") or "Engineering"
     reason = state.get("escalation_reason") or "Policy rule escalation triggered"
+    ticket_id = state.get("ticket_id")
+    workflow_id = state.get("workflow_id")
+    rule_id = state.get("escalation_rule_id")
+    severity = state.get("severity") or "high"
 
-    return {
+    if tracer is not None and hasattr(tracer, "emit"):
+        try:
+            from agents.tracer import EVENT_NODE_STARTED
+
+            await tracer.emit(
+                EVENT_NODE_STARTED,
+                NODE_ESCALATION,
+                {"ticket_id": ticket_id, "target_team": team, "reason": reason},
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("Telemetry emit failed on node_started in escalation: %s", exc)
+
+    esc_res: dict[str, Any] | None = None
+    if ticket_id:
+        try:
+            from backend.app.tools.write_tools import create_escalation
+
+            esc_res = await create_escalation(
+                ticket_id=ticket_id,
+                target_team=team,
+                reason=reason,
+                severity=severity,
+                policy_rule=rule_id,
+                workflow_id=workflow_id,
+                session=session,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "Failed executing create_escalation tool in escalation node: %s", exc
+            )
+
+    if tracer is not None and hasattr(tracer, "emit"):
+        try:
+            from agents.tracer import EVENT_NODE_COMPLETED, EVENT_TOOL_CALLED
+
+            await tracer.emit(
+                EVENT_TOOL_CALLED,
+                NODE_ESCALATION,
+                {
+                    "tool": "create_escalation",
+                    "target_team": team,
+                    "reason": reason,
+                    "escalation_id": esc_res.get("id") if esc_res else None,
+                },
+            )
+            await tracer.emit(
+                EVENT_NODE_COMPLETED,
+                NODE_ESCALATION,
+                {"target_team": team, "status": "escalated"},
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.debug(
+                "Telemetry emit failed on node_completed in escalation: %s", exc
+            )
+
+    res: dict[str, Any] = {
         "current_node": NODE_ESCALATION,
         "completed_nodes": [NODE_ESCALATION],
         "escalation_required": True,
@@ -317,6 +382,10 @@ async def escalation(state: SupportState) -> dict[str, Any]:
             "total_tokens": 0,
         },
     }
+    if esc_res:
+        res["escalation_id"] = esc_res.get("id")
+        res["escalation"] = esc_res
+    return res
 
 
 # ============================================================================
@@ -430,6 +499,7 @@ async def run_support_workflow(
     thread_id: str | None = None,
     checkpointer: BaseCheckpointSaver | None = None,
     tracer: Any | None = None,
+    graph: CompiledStateGraph | None = None,
 ) -> SupportState:
     """Execute the full autonomous support workflow on an input state (CLAUDE.md §7.3, §16).
 
@@ -438,6 +508,7 @@ async def run_support_workflow(
         thread_id: Thread ID for checkpointer resumption and state tracking.
         checkpointer: Optional explicit checkpointer instance.
         tracer: Optional WorkflowTracer instance for telemetry recording.
+        graph: Optional pre-compiled CompiledStateGraph instance.
 
     Returns:
         Final or interrupted SupportState dictionary.
@@ -449,14 +520,19 @@ async def run_support_workflow(
     )
 
     active_tracer = tracer or tracer_for(initial_state)
-    saver = checkpointer if checkpointer is not None else get_default_checkpointer()
-    graph = create_support_graph(checkpointer=saver)
+    if graph is not None:
+        active_graph = graph
+    else:
+        saver = checkpointer if checkpointer is not None else get_default_checkpointer()
+        active_graph = create_support_graph(checkpointer=saver)
 
     tid = thread_id or initial_state.get("ticket_id") or "thread-default-001"
     config = {"configurable": {"thread_id": tid}}
 
     try:
-        final_state: SupportState = await graph.ainvoke(initial_state, config=config)
+        final_state: SupportState = await active_graph.ainvoke(
+            initial_state, config=config
+        )
 
         # Detect LangGraph interrupt gate (US-010, AC-035)
         raw_interrupts = final_state.get("__interrupt__")

@@ -8,6 +8,7 @@ from backend.app.api import (
     approvals,
     auth,
     customers,
+    escalations,
     health,
     knowledge,
     mcp,
@@ -81,6 +82,10 @@ def create_application() -> FastAPI:
     app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
     app.include_router(tickets.router, prefix="/api/v1/tickets", tags=["tickets"])
     app.include_router(approvals.router, prefix="/api/v1/approvals", tags=["approvals"])
+    app.include_router(
+        escalations.router, prefix="/api/v1/escalations", tags=["escalations"]
+    )
+    app.include_router(escalations.router, prefix="/api/v1/escalations", tags=["escalations"])
     app.include_router(customers.router, prefix="/api/v1/customers", tags=["customers"])
     app.include_router(knowledge.router, prefix="/api/v1/knowledge", tags=["knowledge"])
     app.include_router(agents.router, prefix="/api/v1/agents", tags=["agents"])

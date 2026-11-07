@@ -479,6 +479,23 @@ async def run_ticket_workflow(
         elif final_state.get("escalation_required"):
             wf_run.status = WorkflowStatusEnum.ESCALATED.value
             ticket.status = TicketStatusEnum.ESCALATED.value
+            # Ensure open escalation record exists (AC-044)
+            esc_stmt = select(Escalation).where(
+                Escalation.ticket_id == ticket.id,
+                Escalation.status == EscalationStatusEnum.OPEN.value,
+            )
+            existing_esc = (await session.execute(esc_stmt)).scalars().first()
+            if existing_esc is None:
+                new_esc = Escalation(
+                    ticket_id=ticket.id,
+                    workflow_id=wf_id,
+                    target_team=final_state.get("escalation_team") or "Engineering",
+                    policy_reason=final_state.get("escalation_reason")
+                    or "Policy escalation rule triggered",
+                    severity=ticket.severity or "high",
+                    status=EscalationStatusEnum.OPEN.value,
+                )
+                session.add(new_esc)
         else:
             wf_run.status = WorkflowStatusEnum.COMPLETED.value
 
