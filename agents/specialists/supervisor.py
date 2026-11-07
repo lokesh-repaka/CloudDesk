@@ -61,6 +61,14 @@ class SupervisorAgent:
                 injection_scan.confidence,
                 injection_scan.detected_patterns,
             )
+            raw_summary = subject if (subject and subject.strip()) else text
+            summary = _clean_summary(raw_summary)
+            return Classification(
+                category=CategoryEnum.SECURITY,
+                confidence=1.0,
+                reason="Adversarial prompt injection attack detected; categorized as security.",
+                summary=summary,
+            )
 
         # 2. Fast deterministic rule match
         full_text = f"{subject}\n{text}" if subject else text
