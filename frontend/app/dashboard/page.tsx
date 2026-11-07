@@ -1,26 +1,74 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { AppShell } from "@/components/layout";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Button } from "@/components/ui/Button";
-import { TicketIcon, UsersIcon, ShieldIcon, BotIcon } from "@/components/layout/Icons";
-import Link from "next/link";
+import { TicketIcon, UsersIcon, ShieldIcon, BotIcon, RefreshCwIcon } from "@/components/layout/Icons";
 
 export default function DashboardPage() {
+  const { user, role } = useAuth();
+  const [ticketCount, setTicketCount] = useState<number>(12);
+  const [approvalCount, setApprovalCount] = useState<number>(3);
+  const [escalationCount, setEscalationCount] = useState<number>(2);
+  const [loading, setLoading] = useState(false);
+
+  const fetchMetrics = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [ticketsRes, approvalsRes, escalationsRes] = await Promise.allSettled([
+        api.tickets.list(),
+        api.approvals.list(),
+        api.escalations.list(),
+      ]);
+
+      if (ticketsRes.status === "fulfilled") {
+        setTicketCount(ticketsRes.value.total ?? ticketsRes.value.items.length);
+      }
+      if (approvalsRes.status === "fulfilled") {
+        setApprovalCount(approvalsRes.value.length);
+      }
+      if (escalationsRes.status === "fulfilled") {
+        setEscalationCount(escalationsRes.value.length);
+      }
+    } catch {
+      // Keep demo fallback counts
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMetrics();
+  }, [fetchMetrics]);
+
   return (
-    <AppShell pageTitle="Support Operations Dashboard" userRole="agent">
+    <AppShell pageTitle="Support Operations Dashboard" userRole={role}>
       <div className="space-y-6">
         {/* Welcome & Overview Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-lg border border-slate-200">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Welcome to CloudDesk Support</h2>
+            <h2 className="text-lg font-bold text-slate-900">
+              Welcome, {user?.full_name || "Support Operator"}
+            </h2>
             <p className="text-xs text-slate-500 mt-1">
               AI-orchestrated customer resolution platform with policy-gated automation.
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={fetchMetrics}
+              isLoading={loading}
+              leftIcon={<RefreshCwIcon size={14} />}
+            >
+              Refresh Data
+            </Button>
             <Link href="/tickets">
               <Button variant="primary" size="sm" leftIcon={<TicketIcon size={14} />}>
                 View Active Queue
@@ -39,8 +87,8 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900">12</span>
-              <span className="text-2xs text-emerald-600 font-medium">3 requiring review</span>
+              <span className="text-2xl font-bold text-slate-900">{ticketCount}</span>
+              <span className="text-2xs text-emerald-600 font-medium">Active cases</span>
             </div>
           </Card>
 
@@ -52,7 +100,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900">3</span>
+              <span className="text-2xl font-bold text-slate-900">{approvalCount}</span>
               <StatusPill status="pending" size="sm" />
             </div>
           </Card>
@@ -65,7 +113,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900">2</span>
+              <span className="text-2xl font-bold text-slate-900">{escalationCount}</span>
               <span className="text-2xs text-purple-600 font-medium">Policy routed</span>
             </div>
           </Card>
@@ -142,4 +190,3 @@ export default function DashboardPage() {
     </AppShell>
   );
 }
-
