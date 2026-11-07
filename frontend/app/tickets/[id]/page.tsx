@@ -309,8 +309,8 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
     (workflowState?.resolution_plan?.action_payload as Record<string, unknown>) ||
     (workflowState?.resolution_plan?.parameters as Record<string, unknown>) ||
     null;
-  const proposedReply =
-    workflowState?.resolution_plan?.customer_reply ||
+  const proposedReply: string =
+    (workflowState?.resolution_plan?.customer_reply as string) ||
     (workflowState?.resolution_plan?.summary as string) ||
     "";
 
