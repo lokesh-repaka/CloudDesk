@@ -5,6 +5,12 @@ Provides short-term Redis state and long-term customer memory storage with secre
 
 from __future__ import annotations
 
+from memory.long_term import (
+    DEFAULT_RECALL_LIMIT,
+    VALID_MEMORY_TYPES,
+    LongTermMemory,
+    get_long_term_memory,
+)
 from memory.scrub import (
     REDACTION_MARKER,
     SECRET_PATTERNS,
@@ -28,14 +34,18 @@ from memory.short_term import (
 
 __all__ = [
     "CONVERSATION_TTL",
+    "DEFAULT_RECALL_LIMIT",
     "MAX_KEY_QUERY_LEN",
     "MAX_TICKET_ID_LEN",
     "REDACTION_MARKER",
     "RETRIEVAL_CACHE_TTL",
     "SECRET_PATTERNS",
+    "VALID_MEMORY_TYPES",
     "WORKFLOW_STATE_TTL",
+    "LongTermMemory",
     "ScrubResult",
     "ShortTermMemory",
+    "get_long_term_memory",
     "get_short_term_memory",
     "is_raw_ticket_body",
     "sanitize_query_for_key",
