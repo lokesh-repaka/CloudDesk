@@ -17,10 +17,13 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from backend.app.core.guardrails import (
+    REDACTION_MARKER,
+    SECRET_PATTERNS,
     SECURITY_PREAMBLE,
     InjectionScanResult,
     OutputValidationResult,
     scan_for_injection,
+    scrub,
     validate_customer_output,
     wrap_untrusted,
 )
@@ -533,6 +536,8 @@ def evaluate_escalation_decision(
 
 __all__ = [
     "ESCALATION_RULES",
+    "REDACTION_MARKER",
+    "SECRET_PATTERNS",
     "SECURITY_PREAMBLE",
     "EscalationDecision",
     "EscalationRule",
@@ -544,6 +549,7 @@ __all__ = [
     "rule_category",
     "rule_severity",
     "scan_for_injection",
+    "scrub",
     "validate_customer_output",
     "wrap_untrusted",
 ]

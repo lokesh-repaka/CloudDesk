@@ -103,7 +103,7 @@ Sub-tasks in the same phase that do not share files can be open at the same time
 | P7-1 · Escalation and severity rules | `feature/policy-rules` | Completed ✅ |
 | P7-2 · Injection wrapping and security preamble | `feature/guardrail-injection` | Completed ✅ |
 | P7-3 · Customer output validation | `feature/guardrail-output-validation` | Completed ✅ |
-| P7-4 · Secret scrub | `feature/guardrail-secret-scrub` | Pending ❌ |
+| P7-4 · Secret scrub | `feature/guardrail-secret-scrub` | Completed ✅ |
 
 ---
 
