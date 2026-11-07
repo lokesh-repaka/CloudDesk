@@ -31,6 +31,7 @@ from agents.rules import (
     validate_customer_output,
     wrap_untrusted,
 )
+from agents.specialists.supervisor import SupervisorAgent
 
 __all__ = [
     "CUSTOMER_AGENT_SYSTEM_PROMPT",
@@ -47,6 +48,7 @@ __all__ = [
     "EscalationRule",
     "InjectionScanResult",
     "OutputValidationResult",
+    "SupervisorAgent",
     "assess_risk",
     "build_prompt_with_security_preamble",
     "evaluate_escalation_decision",

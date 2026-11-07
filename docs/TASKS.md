@@ -128,7 +128,7 @@ Sub-tasks in the same phase that do not share files can be open at the same time
 | Task | Branch | Status |
 |------|--------|--------|
 | P9-1 · Workflow schemas and fake LLM | `feature/workflow-schemas-fake-llm` | Completed ✅ |
-| P9-2 · Supervisor agent | `feature/agent-supervisor` | Pending ❌ |
+| P9-2 · Supervisor agent | `feature/agent-supervisor` | Completed ✅ |
 | P9-3 · Customer agent | `feature/agent-customer` | Pending ❌ |
 | P9-4 · Knowledge agent | `feature/agent-knowledge` | Pending ❌ |
 | P9-5 · Troubleshooting agent | `feature/agent-troubleshooting` | Pending ❌ |
