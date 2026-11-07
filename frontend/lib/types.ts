@@ -297,3 +297,15 @@ export interface KnowledgeArticleDetail extends KnowledgeArticleSummary {
   file_path?: string | null;
 }
 
+// ----------------------------------------------------------------------------
+// Model Context Protocol (MCP) Types
+// ----------------------------------------------------------------------------
+
+export interface McpToolDefinition {
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>;
+  is_consequential: boolean;
+  requires_approval: boolean;
+}
+
