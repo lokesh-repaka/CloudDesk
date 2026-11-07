@@ -16,6 +16,12 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from backend.app.core.guardrails import (
+    SECURITY_PREAMBLE,
+    InjectionScanResult,
+    scan_for_injection,
+    wrap_untrusted,
+)
 from backend.app.schemas.common import CategoryEnum, SeverityEnum
 
 
@@ -34,10 +40,18 @@ class EscalationRule:
 class EscalationDecision(BaseModel):
     """Enveloped escalation outcome."""
 
-    escalation_required: bool = Field(..., description="Whether ticket must be escalated")
-    target_team: str | None = Field(default=None, description="Designated specialized team")
-    rule_id: str | None = Field(default=None, description="Triggered deterministic policy rule ID")
-    reason: str | None = Field(default=None, description="Explanation or policy justification")
+    escalation_required: bool = Field(
+        ..., description="Whether ticket must be escalated"
+    )
+    target_team: str | None = Field(
+        default=None, description="Designated specialized team"
+    )
+    rule_id: str | None = Field(
+        default=None, description="Triggered deterministic policy rule ID"
+    )
+    reason: str | None = Field(
+        default=None, description="Explanation or policy justification"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -206,7 +220,10 @@ def matching_escalation_rules(
             continue
 
         # 4. Plan name matching
-        if plan_name and (rule.id.lower() in plan_name.lower() or rule.target_team.lower() in plan_name.lower()):
+        if plan_name and (
+            rule.id.lower() in plan_name.lower()
+            or rule.target_team.lower() in plan_name.lower()
+        ):
             matched.append(rule)
             continue
 
@@ -242,7 +259,9 @@ def rule_severity(
     cat_enum = None
     if category:
         try:
-            cat_enum = CategoryEnum(category if isinstance(category, str) else category.value)
+            cat_enum = CategoryEnum(
+                category if isinstance(category, str) else category.value
+            )
         except ValueError:
             cat_enum = None
 
@@ -251,14 +270,22 @@ def rule_severity(
         floor_level = max(floor_level, _SEVERITY_LEVELS[SeverityEnum.CRITICAL])
 
     # Security Incident floor: CRITICAL for ransomware/wipe, HIGH for other breach
-    if cat_enum == CategoryEnum.SECURITY or "ransomware" in text_clean or "compromised" in text_clean:
+    if (
+        cat_enum == CategoryEnum.SECURITY
+        or "ransomware" in text_clean
+        or "compromised" in text_clean
+    ):
         if "ransomware" in text_clean or "database wiped" in text_clean:
             floor_level = max(floor_level, _SEVERITY_LEVELS[SeverityEnum.CRITICAL])
         else:
             floor_level = max(floor_level, _SEVERITY_LEVELS[SeverityEnum.HIGH])
 
     # Catastrophic data loss floor: HIGH or CRITICAL
-    if "data loss" in text_clean or "permanently lost" in text_clean or "database is wiped" in text_clean:
+    if (
+        "data loss" in text_clean
+        or "permanently lost" in text_clean
+        or "database is wiped" in text_clean
+    ):
         floor_level = max(floor_level, _SEVERITY_LEVELS[SeverityEnum.HIGH])
 
     # Feature requests: policy default is LOW (level 1)
@@ -278,15 +305,101 @@ def rule_category(text: str) -> CategoryEnum | None:
 
     # Regular expressions / word boundaries for unambiguous categories
     patterns: list[tuple[CategoryEnum, list[str]]] = [
-        (CategoryEnum.LOGIN_ISSUE, [r"\bsso\b", r"\bsaml\b", r"\bmfa\b", r"\b2fa\b", r"login failure", r"reset password", r"locked out"]),
-        (CategoryEnum.SECURITY, [r"\bransomware\b", r"\bbreach\b", r"unauthorized access", r"compromised account", r"leaked keys", r"security incident", r"\bcompromised\b"]),
-        (CategoryEnum.INTEGRATION, [r"\bslack integration\b", r"\bslack\b", r"\bzapier\b", r"\bintegration\b", r"third-party app"]),
-        (CategoryEnum.API_FAILURE, [r"\brate limit\b", r"\b429\b", r"\brest api\b", r"\bapi endpoint\b", r"\b500 error\b"]),
-        (CategoryEnum.STORAGE_QUOTA, [r"\bstorage quota\b", r"\bstorage limit\b", r"\bdisk full\b", r"upload limit exceeded", r"out of storage"]),
-        (CategoryEnum.WORKSPACE_PERMISSIONS, [r"\bworkspace member\b", r"\badmin role\b", r"\bworkspace permissions\b", r"member permissions", r"access rights"]),
-        (CategoryEnum.BILLING, [r"\bbilling refund\b", r"\binvoice\b", r"\bchargeback\b", r"credit card", r"subscription price", r"payment method", r"\brefund\b"]),
-        (CategoryEnum.FEATURE_REQUEST, [r"\bfeature request\b", r"\broadmap\b", r"\bdark mode\b", r"would be great if"]),
-        (CategoryEnum.ACCOUNT, [r"transfer ownership", r"delete my account", r"change account email", r"account settings", r"\baccount\b"]),
+        (
+            CategoryEnum.LOGIN_ISSUE,
+            [
+                r"\bsso\b",
+                r"\bsaml\b",
+                r"\bmfa\b",
+                r"\b2fa\b",
+                r"login failure",
+                r"reset password",
+                r"locked out",
+            ],
+        ),
+        (
+            CategoryEnum.SECURITY,
+            [
+                r"\bransomware\b",
+                r"\bbreach\b",
+                r"unauthorized access",
+                r"compromised account",
+                r"leaked keys",
+                r"security incident",
+                r"\bcompromised\b",
+            ],
+        ),
+        (
+            CategoryEnum.INTEGRATION,
+            [
+                r"\bslack integration\b",
+                r"\bslack\b",
+                r"\bzapier\b",
+                r"\bintegration\b",
+                r"third-party app",
+            ],
+        ),
+        (
+            CategoryEnum.API_FAILURE,
+            [
+                r"\brate limit\b",
+                r"\b429\b",
+                r"\brest api\b",
+                r"\bapi endpoint\b",
+                r"\b500 error\b",
+            ],
+        ),
+        (
+            CategoryEnum.STORAGE_QUOTA,
+            [
+                r"\bstorage quota\b",
+                r"\bstorage limit\b",
+                r"\bdisk full\b",
+                r"upload limit exceeded",
+                r"out of storage",
+            ],
+        ),
+        (
+            CategoryEnum.WORKSPACE_PERMISSIONS,
+            [
+                r"\bworkspace member\b",
+                r"\badmin role\b",
+                r"\bworkspace permissions\b",
+                r"member permissions",
+                r"access rights",
+            ],
+        ),
+        (
+            CategoryEnum.BILLING,
+            [
+                r"\bbilling refund\b",
+                r"\binvoice\b",
+                r"\bchargeback\b",
+                r"credit card",
+                r"subscription price",
+                r"payment method",
+                r"\brefund\b",
+            ],
+        ),
+        (
+            CategoryEnum.FEATURE_REQUEST,
+            [
+                r"\bfeature request\b",
+                r"\broadmap\b",
+                r"\bdark mode\b",
+                r"would be great if",
+            ],
+        ),
+        (
+            CategoryEnum.ACCOUNT,
+            [
+                r"transfer ownership",
+                r"delete my account",
+                r"change account email",
+                r"account settings",
+                r"\baccount\b",
+            ],
+        ),
     ]
 
     for cat, regexes in patterns:
@@ -298,19 +411,45 @@ def rule_category(text: str) -> CategoryEnum | None:
 
 
 def assess_risk(
-    plan: dict[str, Any] | None,
+    plan: dict[str, Any] | None = None,
     matched_rules: list[EscalationRule] | None = None,
+    severity: SeverityEnum | str | None = None,
+    injection_detected: bool = False,
+    output_validation_failed: bool = False,
 ) -> str:
     """Assess execution risk (CLAUDE.md 7.3 & ADR-03).
 
-    Returns 'high' when the plan has approval-required actions or a policy escalation;
-    returns 'low' for safe/read-only operations.
+    Returns 'high' when:
+    - Injection was detected (injection_detected=True)
+    - Output validation failed (output_validation_failed=True)
+    - Severity is critical
+    - A policy escalation fired (matched_rules has entries)
+    - The plan has approval-required actions (refunds, credential resets)
+
+    Returns 'low' for safe/read-only operations.
     """
-    # 1. Any policy escalation triggers HIGH risk
+    # 1. Injection detected or output validation failed
+    if injection_detected:
+        return "high"
+
+    if output_validation_failed:
+        return "high"
+
+    # 2. Critical severity triggers HIGH risk
+    if severity is not None:
+        sev_val = (
+            severity.value
+            if isinstance(severity, SeverityEnum)
+            else str(severity).lower()
+        )
+        if sev_val == SeverityEnum.CRITICAL.value:
+            return "high"
+
+    # 3. Any policy escalation triggers HIGH risk
     if matched_rules and len(matched_rules) > 0:
         return "high"
 
-    # 2. Check planned actions in resolution plan
+    # 4. Check planned actions in resolution plan
     if plan and "actions" in plan:
         actions = plan.get("actions", [])
         approval_gated_tools = {"create_refund_request", "reset_demo_setting"}
@@ -348,7 +487,11 @@ def evaluate_escalation_decision(
         )
 
     # Convert severity to enum
-    sev_enum = severity if isinstance(severity, SeverityEnum) else SeverityEnum(str(severity).lower())
+    sev_enum = (
+        severity
+        if isinstance(severity, SeverityEnum)
+        else SeverityEnum(str(severity).lower())
+    )
 
     # 2. Model requested escalation
     if model_escalate:
@@ -384,3 +527,19 @@ def evaluate_escalation_decision(
         rule_id=None,
         reason="No policy escalation rule triggered and model indicated no escalation required.",
     )
+
+
+__all__ = [
+    "ESCALATION_RULES",
+    "SECURITY_PREAMBLE",
+    "EscalationDecision",
+    "EscalationRule",
+    "InjectionScanResult",
+    "assess_risk",
+    "evaluate_escalation_decision",
+    "matching_escalation_rules",
+    "rule_category",
+    "rule_severity",
+    "scan_for_injection",
+    "wrap_untrusted",
+]
