@@ -34,6 +34,7 @@ from agents.rules import (
 from agents.specialists.customer import CustomerAgent
 from agents.specialists.knowledge import KnowledgeAgent
 from agents.specialists.supervisor import SupervisorAgent
+from agents.specialists.troubleshooting import TroubleshootingAgent
 
 __all__ = [
     "CUSTOMER_AGENT_SYSTEM_PROMPT",
@@ -53,6 +54,7 @@ __all__ = [
     "KnowledgeAgent",
     "OutputValidationResult",
     "SupervisorAgent",
+    "TroubleshootingAgent",
     "assess_risk",
     "build_prompt_with_security_preamble",
     "evaluate_escalation_decision",
