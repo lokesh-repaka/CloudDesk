@@ -32,6 +32,7 @@ from agents.rules import (
     wrap_untrusted,
 )
 from agents.specialists.customer import CustomerAgent
+from agents.specialists.knowledge import KnowledgeAgent
 from agents.specialists.supervisor import SupervisorAgent
 
 __all__ = [
@@ -49,6 +50,7 @@ __all__ = [
     "EscalationDecision",
     "EscalationRule",
     "InjectionScanResult",
+    "KnowledgeAgent",
     "OutputValidationResult",
     "SupervisorAgent",
     "assess_risk",
