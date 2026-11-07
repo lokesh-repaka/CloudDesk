@@ -1,7 +1,7 @@
-import { NextResponse } from "next/navigation";
+import { NextResponse } from "next/server";
 
 export async function GET() {
-  return Response.json(
+  return NextResponse.json(
     {
       status: "ok",
       timestamp: new Date().toISOString(),
