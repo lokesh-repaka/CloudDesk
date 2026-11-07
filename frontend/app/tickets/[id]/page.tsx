@@ -213,16 +213,16 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
   const handleConfirmApprove = async (
     approvalId: string,
     reason?: string,
-    modifications?: Record<string, unknown>
+    _modifications?: Record<string, unknown>
   ) => {
-    await api.approvals.approve(approvalId, { reason, modifications });
+    await api.approvals.approve(approvalId, { notes: reason });
     setActionNotice("Proposed action approved. Workflow execution resumed.");
     setTimeout(() => setActionNotice(null), 4000);
     await fetchTicketData();
   };
 
   const handleConfirmReject = async (approvalId: string, reason: string) => {
-    await api.approvals.reject(approvalId, { reason });
+    await api.approvals.reject(approvalId, { rejection_reason: reason });
     setActionNotice("Action rejected. Ticket routed to policy escalation.");
     setTimeout(() => setActionNotice(null), 4000);
     await fetchTicketData();
