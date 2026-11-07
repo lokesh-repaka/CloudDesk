@@ -35,8 +35,7 @@ backend:
 	$(UVICORN) backend.app.main:app --host 0.0.0.0 --port 8000 --reload
 
 demo:
-	@echo "Running demo resolution workflow (TICKET=$(or $(TICKET),CD-1002))..."
-	$(PYTHON) -c "print('Demo runner ready: Phase 1 skeleton active')"
+	$(PYTHON) -m backend.app.demo $(if $(TICKET),--ticket $(TICKET),--ticket CD-1002)
 
 seed:
 	@echo "Database seed stub (Active in Phase 2)"

@@ -63,7 +63,8 @@ class SupervisorAgent:
             )
 
         # 2. Fast deterministic rule match
-        deterministic_category = rule_category(text)
+        full_text = f"{subject}\n{text}" if subject else text
+        deterministic_category = rule_category(full_text)
         if deterministic_category is not None:
             raw_summary = subject if (subject and subject.strip()) else text
             summary = _clean_summary(raw_summary)
