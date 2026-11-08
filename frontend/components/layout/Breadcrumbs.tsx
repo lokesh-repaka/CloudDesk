@@ -15,7 +15,6 @@ export function Breadcrumbs({ pathname: propPathname, className = "" }: Breadcru
   const currentPathname = usePathname();
   const path = propPathname ?? currentPathname ?? "/dashboard";
 
-  // Create lookup for known nav labels
   const navLabelMap: Record<string, string> = {};
   for (const item of MAIN_NAV_ITEMS) {
     const segment = item.href.replace(/^\//, "");
@@ -30,10 +29,10 @@ export function Breadcrumbs({ pathname: propPathname, className = "" }: Breadcru
         <li>
           <Link
             href="/dashboard"
-            className="text-slate-500 hover:text-slate-700 transition-colors flex items-center p-0.5 rounded focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="text-[#7d97a3] hover:text-white transition-colors flex items-center p-0.5 rounded focus-visible:ring-2 focus-visible:ring-[#00d2b4]"
             title="Dashboard Home"
           >
-            <HomeIcon size={14} className="text-slate-400" />
+            <HomeIcon size={14} className="text-[#5a7683] hover:text-white transition-colors" />
             <span className="sr-only">Home</span>
           </Link>
         </li>
@@ -47,13 +46,13 @@ export function Breadcrumbs({ pathname: propPathname, className = "" }: Breadcru
 
           return (
             <React.Fragment key={href}>
-              <li className="text-slate-400 flex items-center" aria-hidden="true">
+              <li className="text-[#334b56] flex items-center" aria-hidden="true">
                 <ChevronRightIcon size={12} />
               </li>
-              <li className="flex items-center">
+              <li>
                 {isLast ? (
                   <span
-                    className="font-medium text-slate-800 truncate max-w-xs"
+                    className="font-medium text-white truncate max-w-[200px]"
                     aria-current="page"
                   >
                     {label}
@@ -61,7 +60,7 @@ export function Breadcrumbs({ pathname: propPathname, className = "" }: Breadcru
                 ) : (
                   <Link
                     href={href}
-                    className="text-slate-500 hover:text-slate-700 transition-colors truncate max-w-xs focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                    className="text-[#7d97a3] hover:text-white transition-colors truncate max-w-[150px] focus-visible:ring-2 focus-visible:ring-[#00d2b4] rounded"
                   >
                     {label}
                   </Link>
@@ -74,4 +73,3 @@ export function Breadcrumbs({ pathname: propPathname, className = "" }: Breadcru
     </nav>
   );
 }
-

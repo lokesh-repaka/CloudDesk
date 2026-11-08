@@ -106,16 +106,16 @@ export default function AgentsPage() {
     <AppShell pageTitle="Specialist Agents & Graph Topology">
       <div className="space-y-6">
         {/* Header Summary */}
-        <div className="bg-white p-5 rounded-lg border border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-brand-50 text-brand-600">
+        <div className="bg-[#0c181d] p-5 rounded-2xl border border-[#162d36] shadow-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 rounded-2xl bg-[#122830] text-[#00d2b4] border border-[#1b3d4a] shadow-glow">
               <CpuIcon size={22} />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">
+              <h2 className="text-sm font-bold text-white">
                 Multi-Agent LangGraph Topology (CLAUDE.md §8)
               </h2>
-              <p className="text-2xs text-slate-500 mt-0.5">
+              <p className="text-2xs text-[#7e9aa6] mt-0.5">
                 {specialists.length} specialized agents coordinating across {nodes.length} stateful graph nodes.
               </p>
             </div>
@@ -135,8 +135,8 @@ export default function AgentsPage() {
         {/* Nodes Chip Row */}
         {nodes.length > 0 && (
           <Card padding="sm">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-3xs font-semibold uppercase tracking-wider text-slate-500">
+            <div className="flex items-center gap-2 mb-2.5">
+              <span className="text-3xs font-semibold uppercase tracking-wider text-[#7e9aa6]">
                 StateGraph Execution Pipeline:
               </span>
             </div>
@@ -144,9 +144,9 @@ export default function AgentsPage() {
               {nodes.map((node, i) => (
                 <span
                   key={node}
-                  className="inline-flex items-center px-2 py-0.5 rounded text-2xs font-mono bg-slate-100 text-slate-700 border border-slate-200"
+                  className="inline-flex items-center px-2 py-0.5 rounded-lg text-2xs font-mono bg-[#091519] text-[#2dd4bf] border border-[#163640]"
                 >
-                  <span className="text-slate-400 mr-1">{i + 1}.</span> {node}
+                  <span className="text-[#4b6d7a] mr-1">{i + 1}.</span> {node}
                 </span>
               ))}
             </div>
@@ -156,29 +156,29 @@ export default function AgentsPage() {
         {/* Specialists Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {specialists.map((agent) => (
-            <Card key={agent.name} padding="md" className="flex flex-col justify-between">
+            <Card key={agent.name} padding="md" className="flex flex-col justify-between hover:border-[#1e3c48] transition-colors">
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-1.5 rounded bg-brand-50 text-brand-600">
-                    <BotIcon size={16} />
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 rounded-xl bg-[#122830] text-[#00d2b4] border border-[#1b3d4a]">
+                    <BotIcon size={18} />
                   </div>
                   <StatusPill status="online" size="sm" />
                 </div>
-                <h4 className="text-xs font-bold text-slate-900">{agent.name}</h4>
-                <p className="text-2xs text-slate-600 leading-relaxed mt-1">
+                <h4 className="text-xs font-bold text-white">{agent.name}</h4>
+                <p className="text-2xs text-[#7e9aa6] leading-relaxed mt-1">
                   {agent.description}
                 </p>
 
                 {/* Nodes Managed */}
-                <div className="mt-3">
-                  <div className="text-3xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                <div className="mt-3.5">
+                  <div className="text-3xs font-semibold text-[#52707e] uppercase tracking-wider mb-1.5">
                     Managed Nodes:
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {agent.nodes.map((node) => (
                       <span
                         key={node}
-                        className="px-1.5 py-0.2 rounded text-3xs font-mono bg-slate-100 text-slate-600 border border-slate-200"
+                        className="px-2 py-0.5 rounded text-3xs font-mono bg-[#091418] text-[#8ea8b4] border border-[#172c35]"
                       >
                         {node}
                       </span>
@@ -188,11 +188,11 @@ export default function AgentsPage() {
               </div>
 
               {/* Tools & Rules Footer */}
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-3xs">
-                <span className="text-slate-500">
+              <div className="mt-4 pt-3 border-t border-[#14232a] flex items-center justify-between text-3xs">
+                <span className="text-[#7e9aa6] font-mono">
                   {agent.tools.length} Tools · {agent.rules.length} Rules
                 </span>
-                <Badge variant="neutral" size="sm">
+                <Badge variant="brand" size="sm">
                   Active
                 </Badge>
               </div>

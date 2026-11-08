@@ -19,32 +19,32 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 const variantStyles: Record<BadgeVariant, { container: string; dot: string }> = {
   default: {
-    container: "bg-slate-100 text-slate-700 border-slate-200",
-    dot: "bg-slate-500",
+    container: "bg-[#132026] text-[#8ea8b4] border-[#1d323c]",
+    dot: "bg-[#8ea8b4]",
   },
   neutral: {
-    container: "bg-slate-100 text-slate-700 border-slate-200",
-    dot: "bg-slate-500",
+    container: "bg-[#132026] text-[#8ea8b4] border-[#1d323c]",
+    dot: "bg-[#8ea8b4]",
   },
   brand: {
-    container: "bg-brand-50 text-brand-700 border-brand-200",
-    dot: "bg-brand-600",
+    container: "bg-[#0d2a2f] text-[#2dd4bf] border-[#164a52]",
+    dot: "bg-[#00d2b4]",
   },
   success: {
-    container: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    dot: "bg-emerald-500",
+    container: "bg-[#0e2c21] text-[#34d399] border-[#154d38]",
+    dot: "bg-[#10b981]",
   },
   warning: {
-    container: "bg-amber-50 text-amber-800 border-amber-200",
-    dot: "bg-amber-500",
+    container: "bg-[#342609] text-[#fbbf24] border-[#5e440e]",
+    dot: "bg-[#f59e0b]",
   },
   danger: {
-    container: "bg-rose-50 text-rose-700 border-rose-200",
-    dot: "bg-rose-500",
+    container: "bg-[#33141a] text-[#fb7185] border-[#591e2b]",
+    dot: "bg-[#f43f5e]",
   },
   info: {
-    container: "bg-sky-50 text-sky-700 border-sky-200",
-    dot: "bg-sky-500",
+    container: "bg-[#0d2a2f] text-[#2dd4bf] border-[#164a52]",
+    dot: "bg-[#00d2b4]",
   },
 };
 
@@ -65,9 +65,7 @@ export function Badge({
 
   return (
     <span
-      className={`inline-flex items-center font-medium border rounded-md whitespace-nowrap ${
-        styles.container
-      } ${sizeStyles[size]} ${className}`}
+      className={`inline-flex items-center font-medium border rounded-md uppercase tracking-wider ${styles.container} ${sizeStyles[size]} ${className}`}
       {...props}
     >
       {dot && (
@@ -76,8 +74,7 @@ export function Badge({
           aria-hidden="true"
         />
       )}
-      {children}
+      <span>{children}</span>
     </span>
   );
 }
-

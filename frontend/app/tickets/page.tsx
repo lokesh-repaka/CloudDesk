@@ -141,16 +141,16 @@ export default function TicketsPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
               statusFilter === "all"
-                ? "bg-slate-900 text-white shadow-xs"
-                : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                ? "bg-[#0f2a32] text-[#00d2b4] border border-[#1b4f5d] shadow-glow"
+                : "bg-[#0e181c] text-[#7e9aa6] hover:bg-[#132228] border border-[#182c34]"
             }`}
           >
             <span>All Tickets</span>
             <span
               className={`px-1.5 py-0.2 rounded-full text-3xs ${
-                statusFilter === "all" ? "bg-slate-700 text-white" : "bg-slate-100 text-slate-600"
+                statusFilter === "all" ? "bg-[#143d48] text-[#2dd4bf]" : "bg-[#14232a] text-[#7e9aa6]"
               }`}
             >
               {counts.all}
@@ -160,18 +160,18 @@ export default function TicketsPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("waiting_on_approval")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
               statusFilter === "waiting_on_approval"
-                ? "bg-amber-600 text-white shadow-xs"
-                : "bg-white text-amber-800 hover:bg-amber-50 border border-amber-200"
+                ? "bg-[#2f2b10] text-[#facc15] border border-[#4d4414] shadow-glow-amber"
+                : "bg-[#0e181c] text-[#facc15] hover:bg-[#1b1c11] border border-[#182c34]"
             }`}
           >
             <span>Needs Approval</span>
             <span
               className={`px-1.5 py-0.2 rounded-full text-3xs ${
                 statusFilter === "waiting_on_approval"
-                  ? "bg-amber-800 text-white"
-                  : "bg-amber-100 text-amber-800"
+                  ? "bg-[#423a10] text-[#facc15]"
+                  : "bg-[#23200d] text-[#facc15]"
               }`}
             >
               {counts.waiting_on_approval}
@@ -181,16 +181,16 @@ export default function TicketsPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("in_progress")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
               statusFilter === "in_progress"
-                ? "bg-blue-600 text-white shadow-xs"
-                : "bg-white text-blue-800 hover:bg-blue-50 border border-blue-200"
+                ? "bg-[#112a36] text-[#38bdf8] border border-[#1c4b5e]"
+                : "bg-[#0e181c] text-[#7e9aa6] hover:bg-[#132228] border border-[#182c34]"
             }`}
           >
             <span>In Progress</span>
             <span
               className={`px-1.5 py-0.2 rounded-full text-3xs ${
-                statusFilter === "in_progress" ? "bg-blue-800 text-white" : "bg-blue-100 text-blue-800"
+                statusFilter === "in_progress" ? "bg-[#163a4b] text-[#38bdf8]" : "bg-[#14232a] text-[#7e9aa6]"
               }`}
             >
               {counts.in_progress}
@@ -200,16 +200,16 @@ export default function TicketsPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("escalated")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
               statusFilter === "escalated"
-                ? "bg-purple-600 text-white shadow-xs"
-                : "bg-white text-purple-800 hover:bg-purple-50 border border-purple-200"
+                ? "bg-[#27153b] text-[#c084fc] border border-[#4a2472]"
+                : "bg-[#0e181c] text-[#7e9aa6] hover:bg-[#132228] border border-[#182c34]"
             }`}
           >
             <span>Escalated</span>
             <span
               className={`px-1.5 py-0.2 rounded-full text-3xs ${
-                statusFilter === "escalated" ? "bg-purple-800 text-white" : "bg-purple-100 text-purple-800"
+                statusFilter === "escalated" ? "bg-[#3e1f5e] text-[#c084fc]" : "bg-[#14232a] text-[#7e9aa6]"
               }`}
             >
               {counts.escalated}
@@ -219,18 +219,16 @@ export default function TicketsPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("resolved")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
               statusFilter === "resolved"
-                ? "bg-emerald-600 text-white shadow-xs"
-                : "bg-white text-emerald-800 hover:bg-emerald-50 border border-emerald-200"
+                ? "bg-[#0e2c21] text-[#34d399] border border-[#154d38]"
+                : "bg-[#0e181c] text-[#7e9aa6] hover:bg-[#132228] border border-[#182c34]"
             }`}
           >
             <span>Resolved</span>
             <span
               className={`px-1.5 py-0.2 rounded-full text-3xs ${
-                statusFilter === "resolved"
-                  ? "bg-emerald-800 text-white"
-                  : "bg-emerald-100 text-emerald-800"
+                statusFilter === "resolved" ? "bg-[#144733] text-[#34d399]" : "bg-[#14232a] text-[#7e9aa6]"
               }`}
             >
               {counts.resolved}
@@ -239,7 +237,7 @@ export default function TicketsPage() {
         </div>
 
         {/* Filter Controls Bar */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-lg border border-slate-200 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-[#0c181d] p-4 rounded-2xl border border-[#162d36] shadow-card">
           <div className="flex-1 max-w-sm">
             <Input
               placeholder="Search by ticket ID, subject, customer..."
@@ -294,8 +292,8 @@ export default function TicketsPage() {
 
         {/* Table / Empty State */}
         {loading && tickets.length === 0 ? (
-          <div className="py-12 flex justify-center text-xs text-slate-500">
-            <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-brand-600 border-t-transparent mr-2" />
+          <div className="py-12 flex justify-center text-xs text-[#7e9aa6]">
+            <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-[#00d2b4] border-t-transparent mr-2" />
             Loading tickets queue...
           </div>
         ) : filteredTickets.length === 0 ? (
@@ -335,22 +333,22 @@ export default function TicketsPage() {
               <TableBody>
                 {filteredTickets.map((ticket) => (
                   <TableRow key={ticket.id} isClickable>
-                    <TableCell className="font-mono font-semibold text-brand-600">
+                    <TableCell className="font-mono font-bold text-[#00d2b4]">
                       <Link href={`/tickets/${ticket.id}`} className="hover:underline">
-                        {ticket.id}
+                        #{ticket.id}
                       </Link>
                     </TableCell>
-                    <TableCell className="font-medium text-slate-800">
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-slate-100 text-slate-700 font-bold text-3xs flex items-center justify-center border border-slate-200 flex-shrink-0">
+                    <TableCell>
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-6 w-6 rounded-full bg-[#142830] text-[#00d2b4] font-bold text-3xs flex items-center justify-center border border-[#1f3e4b] flex-shrink-0">
                           {(ticket.customer_name || ticket.customer_id || "C").charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate font-semibold text-slate-900">
+                          <div className="truncate font-semibold text-white">
                             {ticket.customer_name || ticket.customer_id}
                           </div>
                           {ticket.customer_email && (
-                            <div className="text-3xs text-slate-400 font-normal truncate">
+                            <div className="text-3xs text-[#7e9aa6] font-normal truncate">
                               {ticket.customer_email}
                             </div>
                           )}
@@ -358,8 +356,8 @@ export default function TicketsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="max-w-xs">
-                      <Link href={`/tickets/${ticket.id}`} className="hover:text-brand-600">
-                        <div className="font-normal text-slate-900 truncate">{ticket.subject}</div>
+                      <Link href={`/tickets/${ticket.id}`} className="hover:text-[#00d2b4]">
+                        <div className="font-normal text-slate-200 truncate">{ticket.subject}</div>
                       </Link>
                     </TableCell>
                     <TableCell>
@@ -373,12 +371,12 @@ export default function TicketsPage() {
                     <TableCell>
                       <StatusPill status={ticket.status} size="sm" />
                     </TableCell>
-                    <TableCell className="uppercase text-3xs text-slate-500 font-mono">
+                    <TableCell className="uppercase text-3xs text-[#7e9aa6] font-mono">
                       {ticket.channel}
                     </TableCell>
                     <TableCell>
                       <Link href={`/tickets/${ticket.id}`}>
-                        <Button variant="secondary" size="xs" rightIcon={<ArrowRightIcon size={12} />}>
+                        <Button variant="secondary" size="xs" rightIcon={<ArrowRightIcon size={10} />}>
                           Inspect
                         </Button>
                       </Link>

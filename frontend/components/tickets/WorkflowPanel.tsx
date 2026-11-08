@@ -69,9 +69,9 @@ export function WorkflowPanel({
 
   return (
     <Card padding="none" className="flex flex-col h-full overflow-hidden">
-      <CardHeader className="px-5 py-4 border-b border-slate-200 mb-0">
+      <CardHeader className="px-5 py-4 border-b border-[#162d36] mb-0 bg-[#0c181d]">
         <div className="flex items-center justify-between w-full">
-          <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
+          <CardTitle className="text-sm font-extrabold text-white flex items-center gap-2">
             <span>Workflow Engine</span>
             {isRunning && <Badge variant="warning">RUNNING</Badge>}
             {isPendingApproval && <Badge variant="danger">PAUSED (APPROVAL)</Badge>}
@@ -111,7 +111,7 @@ export function WorkflowPanel({
         </div>
       </CardHeader>
 
-      <div className="p-4 sm:p-5 space-y-6 overflow-y-auto flex-1 bg-white">
+      <div className="p-4 sm:p-5 space-y-6 overflow-y-auto flex-1 bg-[#0c181d]">
         {!canAct && (
           <Alert variant="warning" title="Viewer Authorization">
             Workflow actions and approvals are disabled in read-only mode (AC-054).
@@ -120,37 +120,37 @@ export function WorkflowPanel({
 
         {/* Telemetry Metrics Bar (CLAUDE.md §16) */}
         {(totalTokens > 0 || totalDurationMs > 0) && (
-          <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+          <div className="grid grid-cols-3 gap-2 p-3 bg-[#0f2127] border border-[#193641] rounded-xl text-xs">
             <div>
-              <span className="text-2xs text-slate-500 block">Total Tokens</span>
-              <span className="font-mono font-semibold text-slate-800">
+              <span className="text-3xs text-[#7e9aa6] block">Total Tokens</span>
+              <span className="font-mono font-bold text-[#00d2b4]">
                 {totalTokens.toLocaleString()}
               </span>
               {promptTokens > 0 && completionTokens > 0 && (
-                <span className="text-2xs text-slate-400 block font-mono">
+                <span className="text-3xs text-[#5a7683] block font-mono">
                   {promptTokens}p / {completionTokens}c
                 </span>
               )}
             </div>
 
             <div>
-              <span className="text-2xs text-slate-500 block">Pipeline Runtime</span>
-              <span className="font-mono font-semibold text-slate-800">
+              <span className="text-3xs text-[#7e9aa6] block">Pipeline Runtime</span>
+              <span className="font-mono font-bold text-white">
                 {totalDurationMs > 1000
                   ? `${(totalDurationMs / 1000).toFixed(2)}s`
                   : `${totalDurationMs}ms`}
               </span>
-              <span className="text-2xs text-slate-400 block">
+              <span className="text-3xs text-[#5a7683] block">
                 {events.length} events
               </span>
             </div>
 
             <div>
-              <span className="text-2xs text-slate-500 block">Estimated Cost</span>
-              <span className="font-mono font-semibold text-slate-800">
+              <span className="text-3xs text-[#7e9aa6] block">Estimated Cost</span>
+              <span className="font-mono font-bold text-[#facc15]">
                 ${totalCost.toFixed(5)}
               </span>
-              <span className="text-2xs text-slate-400 block">USD</span>
+              <span className="text-3xs text-[#5a7683] block">USD</span>
             </div>
           </div>
         )}
@@ -158,10 +158,10 @@ export function WorkflowPanel({
         {/* 12-Step LangGraph Pipeline Execution Steps (AC-053) */}
         <div>
           <div className="flex items-center justify-between mb-2.5">
-            <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <h4 className="text-3xs font-bold text-[#6e8a96] uppercase tracking-wider">
               12-Step Pipeline Execution
             </h4>
-            <span className="text-2xs text-slate-400 font-mono">
+            <span className="text-3xs text-[#00d2b4] font-mono">
               {workflowState?.current_node || (isCompleted ? "Completed" : "Idle")}
             </span>
           </div>
@@ -174,32 +174,32 @@ export function WorkflowPanel({
 
         {/* Diagnosis & Root Cause */}
         <div>
-          <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2.5">
+          <h4 className="text-3xs font-bold text-[#6e8a96] uppercase tracking-wider mb-2.5">
             Diagnosis & Root Cause
           </h4>
-          <div className="border border-slate-200 rounded-lg p-3.5 bg-white space-y-2 text-xs">
+          <div className="border border-[#193641] rounded-xl p-3.5 bg-[#0f2127] space-y-2 text-xs">
             {diagnosis ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium">Classified Root Cause:</span>
+                  <span className="text-[#8fa7b3] font-medium">Classified Root Cause:</span>
                   <Badge variant="brand">{String(diagnosis.root_cause || "Identified")}</Badge>
                 </div>
                 {Boolean(diagnosis.summary) && (
-                  <p className="text-slate-700 text-xs leading-relaxed font-sans">
+                  <p className="text-slate-200 text-xs leading-relaxed font-sans">
                     {String(diagnosis.summary)}
                   </p>
                 )}
                 {Boolean(diagnosis.confidence) && (
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-2xs text-slate-500">
+                  <div className="flex items-center justify-between pt-1 border-t border-[#193641] text-3xs text-[#7e9aa6]">
                     <span>Confidence Score:</span>
-                    <span className="font-mono font-medium text-slate-700">
+                    <span className="font-mono font-bold text-[#00d2b4]">
                       {Math.round(Number(diagnosis.confidence) * 100)}%
                     </span>
                   </div>
                 )}
               </div>
             ) : (
-              <p className="text-slate-500 italic">
+              <p className="text-[#7e9aa6] italic text-xs">
                 {isRunning
                   ? "Analyzing issue and determining root cause..."
                   : "No diagnostic findings recorded yet. Run the pipeline to analyze."}
@@ -210,10 +210,10 @@ export function WorkflowPanel({
 
         {/* Evidence & Knowledge Citations */}
         <div>
-          <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2.5">
+          <h4 className="text-3xs font-bold text-[#6e8a96] uppercase tracking-wider mb-2.5">
             Evidence Citations
           </h4>
-          <div className="border border-slate-200 rounded-lg p-3.5 bg-white space-y-2 text-xs">
+          <div className="border border-[#193641] rounded-xl p-3.5 bg-[#0f2127] space-y-2 text-xs">
             {resolutionPlan?.citations &&
             Array.isArray(resolutionPlan.citations) &&
             resolutionPlan.citations.length > 0 ? (
@@ -221,10 +221,10 @@ export function WorkflowPanel({
                 {resolutionPlan.citations.map((cite: any, i: number) => (
                   <div
                     key={i}
-                    className="p-2.5 bg-slate-50 rounded border border-slate-200 text-xs space-y-1"
+                    className="p-2.5 bg-[#0c181d] rounded-lg border border-[#162d36] text-xs space-y-1"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-slate-800">
+                      <span className="font-bold text-white">
                         {cite.title || `Source #${i + 1}`}
                       </span>
                       {Boolean(cite.score) && (
@@ -234,7 +234,7 @@ export function WorkflowPanel({
                       )}
                     </div>
                     {Boolean(cite.snippet) && (
-                      <p className="text-slate-600 text-2xs font-sans line-clamp-2">
+                      <p className="text-[#8fa7b3] text-2xs font-sans line-clamp-2">
                         {cite.snippet}
                       </p>
                     )}
@@ -242,7 +242,7 @@ export function WorkflowPanel({
                 ))}
               </div>
             ) : (
-              <p className="text-slate-500 italic">
+              <p className="text-[#7e9aa6] italic text-xs">
                 No citations referenced. Retrieved articles will appear here after RAG search.
               </p>
             )}
@@ -250,15 +250,15 @@ export function WorkflowPanel({
         </div>
 
         {/* Action Panel */}
-        <div className="pt-2 border-t border-slate-200">
-          <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+        <div className="pt-2 border-t border-[#162d36]">
+          <h4 className="text-3xs font-bold text-[#6e8a96] uppercase tracking-wider mb-3">
             Workflow Actions
           </h4>
 
           {isPendingApproval && (
-            <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
-              <p className="text-xs font-medium text-amber-900 mb-1">Approval Required</p>
-              <p className="text-2xs text-amber-700">
+            <div className="mb-3 p-3 bg-[#241a06] border border-[#523d0e] rounded-xl">
+              <p className="text-xs font-bold text-[#facc15] mb-1">Approval Required</p>
+              <p className="text-3xs text-[#d1b87a]">
                 This workflow contains consequential actions (such as a customer refund or tier change)
                 awaiting human authorization.
               </p>
@@ -271,7 +271,7 @@ export function WorkflowPanel({
               size="sm"
               onClick={onApprove}
               disabled={!canAct || !isPendingApproval}
-              className={isPendingApproval ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}
+              className={isPendingApproval ? "bg-[#10b981] hover:bg-[#34d399] text-[#06120d] font-bold" : ""}
               leftIcon={
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

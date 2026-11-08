@@ -13,13 +13,13 @@ export function Card({
   const paddingStyles = {
     none: "",
     sm: "p-3 sm:p-4",
-    md: "p-4 sm:p-6",
-    lg: "p-6 sm:p-8",
+    md: "p-4 sm:p-5",
+    lg: "p-5 sm:p-7",
   };
 
   return (
     <div
-      className={`bg-white rounded-lg border border-slate-200 shadow-xs ${paddingStyles[padding]} ${className}`}
+      className={`bg-[#0e181c] rounded-xl border border-[#182c34] text-slate-100 shadow-card ${paddingStyles[padding]} ${className}`}
       {...props}
     >
       {children}
@@ -34,7 +34,7 @@ export function CardHeader({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`border-b border-slate-200 pb-3 mb-4 flex items-center justify-between ${className}`}
+      className={`border-b border-[#182c34] pb-3 mb-4 flex items-center justify-between ${className}`}
       {...props}
     >
       {children}
@@ -49,7 +49,7 @@ export function CardTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={`text-base font-semibold text-slate-900 leading-tight ${className}`}
+      className={`text-sm sm:text-base font-bold text-white tracking-tight ${className}`}
       {...props}
     >
       {children}
@@ -63,7 +63,10 @@ export function CardDescription({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={`text-xs text-slate-500 mt-0.5 ${className}`} {...props}>
+    <p
+      className={`text-xs text-[#7e9aa6] mt-0.5 ${className}`}
+      {...props}
+    >
       {children}
     </p>
   );
@@ -88,11 +91,10 @@ export function CardFooter({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`border-t border-slate-200 pt-3 mt-4 flex items-center justify-between text-sm ${className}`}
+      className={`border-t border-[#182c34] pt-3 mt-4 flex items-center justify-between text-xs text-[#7e9aa6] ${className}`}
       {...props}
     >
       {children}
     </div>
   );
 }
-

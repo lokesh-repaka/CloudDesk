@@ -4,7 +4,7 @@ import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth, DEMO_USERS_MAP } from "@/lib/auth";
 import { Role } from "@/lib/types";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
+import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
@@ -60,24 +60,24 @@ function LoginForm() {
   const isBusy = submitting || authLoading;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#070d10] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         {/* Brand Logo & Name */}
-        <div className="flex justify-center mb-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm font-bold">
-            <BotIcon size={28} className="text-white" />
+        <div className="flex justify-center mb-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#00d2b4] text-[#070d10] shadow-glow font-bold">
+            <BotIcon size={26} className="text-[#070d10]" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h2 className="text-2xl font-bold tracking-tight text-white">
           Sign in to CloudDesk
         </h2>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-[#7e9aa6]">
           AI-orchestrated customer resolution platform with policy-gated automation
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
-        <Card padding="lg">
+        <Card padding="lg" className="rounded-2xl border-[#182c34] bg-[#0e181c] shadow-card">
           {/* Reason Notification Banner */}
           {reason === "expired" && (
             <div className="mb-4">
@@ -98,12 +98,12 @@ function LoginForm() {
           {/* Quick Demo Access Section */}
           <div className="mb-6 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-800 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-white uppercase tracking-wider">
                 Fast Demo Access
               </span>
               <Badge variant="neutral" size="sm">DEMO MODE</Badge>
             </div>
-            <p className="text-2xs text-slate-500">
+            <p className="text-2xs text-[#7e9aa6]">
               Select a pre-configured role to immediately explore the console with mock offline workflows:
             </p>
 
@@ -112,17 +112,17 @@ function LoginForm() {
                 type="button"
                 disabled={isBusy}
                 onClick={() => handleDemoSignIn("admin")}
-                className="flex items-center justify-between p-3 rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-left transition-colors cursor-pointer disabled:opacity-50"
+                className="flex items-center justify-between p-3.5 rounded-xl border border-[#162d36] bg-[#0c181d] hover:bg-[#122228] text-left transition-colors cursor-pointer disabled:opacity-50"
               >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded bg-purple-50 text-purple-700">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[#2e1d42] text-[#c084fc] border border-[#48286a]">
                     <ShieldIcon size={16} />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-slate-900">
+                    <div className="text-xs font-semibold text-white">
                       Alice Admin
                     </div>
-                    <div className="text-2xs text-slate-500 font-mono">
+                    <div className="text-2xs text-[#7e9aa6] font-mono">
                       admin@clouddesk.demo
                     </div>
                   </div>
@@ -134,17 +134,17 @@ function LoginForm() {
                 type="button"
                 disabled={isBusy}
                 onClick={() => handleDemoSignIn("agent")}
-                className="flex items-center justify-between p-3 rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-left transition-colors cursor-pointer disabled:opacity-50"
+                className="flex items-center justify-between p-3.5 rounded-xl border border-[#162d36] bg-[#0c181d] hover:bg-[#122228] text-left transition-colors cursor-pointer disabled:opacity-50"
               >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded bg-brand-50 text-brand-700">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[#102d33] text-[#00d2b4] border border-[#184650]">
                     <BotIcon size={16} />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-slate-900">
+                    <div className="text-xs font-semibold text-white">
                       Sam Agent
                     </div>
-                    <div className="text-2xs text-slate-500 font-mono">
+                    <div className="text-2xs text-[#7e9aa6] font-mono">
                       sam.agent@clouddesk.demo
                     </div>
                   </div>
@@ -156,17 +156,17 @@ function LoginForm() {
                 type="button"
                 disabled={isBusy}
                 onClick={() => handleDemoSignIn("viewer")}
-                className="flex items-center justify-between p-3 rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-left transition-colors cursor-pointer disabled:opacity-50"
+                className="flex items-center justify-between p-3.5 rounded-xl border border-[#162d36] bg-[#0c181d] hover:bg-[#122228] text-left transition-colors cursor-pointer disabled:opacity-50"
               >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded bg-slate-100 text-slate-700">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[#14232a] text-[#8ea8b4] border border-[#1d3540]">
                     <UsersIcon size={16} />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-slate-900">
+                    <div className="text-xs font-semibold text-white">
                       Vic Viewer
                     </div>
-                    <div className="text-2xs text-slate-500 font-mono">
+                    <div className="text-2xs text-[#7e9aa6] font-mono">
                       vic.viewer@clouddesk.demo
                     </div>
                   </div>
@@ -178,10 +178,10 @@ function LoginForm() {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
+              <div className="w-full border-t border-[#182c34]" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-2 text-slate-400 font-medium">Or sign in with email</span>
+              <span className="bg-[#0e181c] px-3 text-[#52707e] font-medium">Or sign in with email</span>
             </div>
           </div>
 
@@ -225,7 +225,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#070d10]" />}>
       <LoginForm />
     </Suspense>
   );

@@ -6,7 +6,7 @@ export function Table({
   ...props
 }: React.TableHTMLAttributes<HTMLTableElement>) {
   return (
-    <div className="w-full overflow-x-auto rounded-lg border border-slate-200 bg-white">
+    <div className="w-full overflow-x-auto rounded-xl border border-[#182c34] bg-[#0e181c]">
       <table className={`w-full text-left text-xs border-collapse ${className}`} {...props}>
         {children}
       </table>
@@ -21,7 +21,7 @@ export function TableHeader({
 }: React.HTMLAttributes<HTMLTableSectionElement>) {
   return (
     <thead
-      className={`border-b border-slate-200 bg-slate-50 text-3xs font-semibold uppercase tracking-wider text-slate-500 ${className}`}
+      className={`border-b border-[#182c34] bg-[#091418] text-3xs font-semibold uppercase tracking-wider text-[#6e8a96] ${className}`}
       {...props}
     >
       {children}
@@ -35,7 +35,7 @@ export function TableBody({
   ...props
 }: React.HTMLAttributes<HTMLTableSectionElement>) {
   return (
-    <tbody className={`divide-y divide-slate-100 bg-white ${className}`} {...props}>
+    <tbody className={`divide-y divide-[#14232a] bg-[#0e181c] ${className}`} {...props}>
       {children}
     </tbody>
   );
@@ -50,7 +50,7 @@ export function TableRow({
   return (
     <tr
       className={`transition-colors ${
-        isClickable ? "hover:bg-slate-50 cursor-pointer" : "hover:bg-slate-50/50"
+        isClickable ? "hover:bg-[#132228] cursor-pointer" : "hover:bg-[#111e24]"
       } ${className}`}
       {...props}
     >
@@ -65,7 +65,7 @@ export function TableHead({
   ...props
 }: React.ThHTMLAttributes<HTMLTableCellElement>) {
   return (
-    <th className={`px-4 py-3 font-semibold text-slate-600 ${className}`} {...props}>
+    <th className={`px-4 py-3 font-semibold text-[#7d97a3] ${className}`} {...props}>
       {children}
     </th>
   );
@@ -77,9 +77,8 @@ export function TableCell({
   ...props
 }: React.TdHTMLAttributes<HTMLTableCellElement>) {
   return (
-    <td className={`px-4 py-3 text-slate-700 whitespace-nowrap ${className}`} {...props}>
+    <td className={`px-4 py-3 text-slate-200 ${className}`} {...props}>
       {children}
     </td>
   );
 }
-

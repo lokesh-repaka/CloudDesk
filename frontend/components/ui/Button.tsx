@@ -13,22 +13,22 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 border-transparent shadow-xs focus-visible:ring-brand-500",
+    "bg-[#00d2b4] text-[#060c0e] font-bold hover:bg-[#2dd4bf] active:bg-[#00bfa3] border-transparent shadow-glow focus-visible:ring-[#00d2b4]",
   secondary:
-    "bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100 border-slate-300 shadow-xs focus-visible:ring-slate-400",
+    "bg-[#122228] text-slate-200 hover:bg-[#182e37] active:bg-[#1d3742] border-[#1f3742] shadow-xs focus-visible:ring-slate-400",
   outline:
-    "bg-transparent text-slate-700 hover:bg-slate-100 border-slate-300 focus-visible:ring-slate-400",
+    "bg-transparent text-slate-300 hover:bg-[#122228] border-[#1f3742] focus-visible:ring-slate-400",
   danger:
-    "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 border-transparent shadow-xs focus-visible:ring-rose-500",
+    "bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 border-transparent shadow-xs focus-visible:ring-rose-500",
   ghost:
-    "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 border-transparent focus-visible:ring-slate-400",
+    "bg-transparent text-[#7e9aa6] hover:bg-[#122228] hover:text-white border-transparent focus-visible:ring-slate-400",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
   xs: "px-2 py-1 text-2xs gap-1 rounded",
-  sm: "px-2.5 py-1.5 text-xs gap-1.5 rounded-md",
-  md: "px-3.5 py-2 text-sm gap-2 rounded-md",
-  lg: "px-4 py-2.5 text-base gap-2.5 rounded-lg",
+  sm: "px-2.5 py-1.5 text-xs gap-1.5 rounded-lg",
+  md: "px-3.5 py-2 text-sm gap-2 rounded-lg",
+  lg: "px-4 py-2.5 text-base gap-2.5 rounded-xl",
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -60,21 +60,15 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading ? (
-          <span
-            className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2"
-            aria-hidden="true"
-          />
+          <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent mr-1.5" />
         ) : (
-          leftIcon && <span className="flex-shrink-0" aria-hidden="true">{leftIcon}</span>
+          leftIcon && <span className="flex-shrink-0">{leftIcon}</span>
         )}
         <span>{children}</span>
-        {!isLoading && rightIcon && (
-          <span className="flex-shrink-0" aria-hidden="true">{rightIcon}</span>
-        )}
+        {!isLoading && rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
       </button>
     );
   }
 );
 
 Button.displayName = "Button";
-

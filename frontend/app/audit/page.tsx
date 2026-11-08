@@ -80,22 +80,22 @@ export default function AuditPage() {
   return (
     <AppShell pageTitle="Audit & Compliance Logs">
       <div className="space-y-6">
-        {/* Header Alert */}
-        <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-slate-200">
+        {/* Header Alert & Filter */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-[#0c181d] p-4 rounded-2xl border border-[#162d36] shadow-card gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded bg-slate-100 text-slate-700">
+            <div className="p-2.5 rounded-xl bg-[#122830] text-[#00d2b4] border border-[#1b3d4a]">
               <ShieldIcon size={18} />
             </div>
             <div>
-              <h3 className="text-xs font-semibold text-slate-900">Immutable Audit Trail (N6)</h3>
-              <p className="text-2xs text-slate-500">
+              <h3 className="text-xs font-semibold text-white">Immutable Audit Trail (N6)</h3>
+              <p className="text-2xs text-[#7e9aa6]">
                 Every sensitive mutation, approval decision, policy rule match, and access event is recorded.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-48">
+            <div className="w-56">
               <Select
                 value={actionFilter}
                 onChange={(e) => setActionFilter(e.target.value)}
@@ -149,21 +149,21 @@ export default function AuditPage() {
               <TableBody>
                 {filteredLogs.map((log) => (
                   <TableRow key={log.id}>
-                    <TableCell className="font-mono text-3xs text-slate-500">{log.id}</TableCell>
-                    <TableCell className="font-mono text-3xs text-slate-600">{log.timestamp}</TableCell>
-                    <TableCell className="font-mono text-xs text-slate-800">{log.actor}</TableCell>
+                    <TableCell className="font-mono text-3xs text-[#7e9aa6]">{log.id}</TableCell>
+                    <TableCell className="font-mono text-3xs text-[#7e9aa6]">{log.timestamp}</TableCell>
+                    <TableCell className="font-mono text-xs text-white">{log.actor}</TableCell>
                     <TableCell>
                       <Badge variant="brand" size="sm">
                         {log.action}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-mono text-xs font-semibold text-brand-600">
+                    <TableCell className="font-mono text-xs font-semibold text-[#00d2b4]">
                       {log.target}
                     </TableCell>
-                    <TableCell className="text-slate-700 max-w-sm truncate text-2xs">
+                    <TableCell className="text-slate-200 max-w-sm truncate text-2xs">
                       {log.detail}
                     </TableCell>
-                    <TableCell className="font-mono text-3xs text-slate-400">{log.ip_address}</TableCell>
+                    <TableCell className="font-mono text-3xs text-[#52707e]">{log.ip_address}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

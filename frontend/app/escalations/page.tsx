@@ -84,12 +84,12 @@ export default function EscalationsPage() {
     <AppShell pageTitle="Deterministic Policy Escalations" userRole={role}>
       <div className="space-y-6">
         {/* Header Rule Info Banner */}
-        <div className="p-4 rounded-lg border border-purple-200 bg-purple-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="p-4 rounded-2xl border border-[#3b1d54] bg-[#1a0e26] shadow-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h3 className="text-xs font-semibold text-purple-900">
+            <h3 className="text-xs font-semibold text-[#d8b4fe]">
               Deterministic Policy Escalation Engine (CLAUDE.md §7)
             </h3>
-            <p className="text-2xs text-purple-700 mt-0.5">
+            <p className="text-2xs text-[#c084fc]/90 mt-0.5">
               Hard business rules override model autonomy to guarantee immediate specialist dispatch for compliance, security, and critical outages.
             </p>
           </div>
@@ -101,8 +101,8 @@ export default function EscalationsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-slate-200">
-          <div className="w-48">
+        <div className="flex items-center justify-between bg-[#0c181d] p-4 rounded-2xl border border-[#162d36] shadow-card">
+          <div className="w-56">
             <Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -122,13 +122,13 @@ export default function EscalationsPage() {
             isLoading={loading}
             leftIcon={<RefreshCwIcon size={14} />}
           >
-            Refresh
+            Refresh Queue
           </Button>
         </div>
 
         {loading && escalations.length === 0 ? (
-          <div className="py-12 flex justify-center text-xs text-slate-500">
-            <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-purple-600 border-t-transparent mr-2" />
+          <div className="py-16 flex flex-col items-center justify-center text-xs text-[#7e9aa6]">
+            <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-[#c084fc] border-t-transparent mb-3" />
             Loading policy escalation queue...
           </div>
         ) : filtered.length === 0 ? (
@@ -160,10 +160,10 @@ export default function EscalationsPage() {
               <TableBody>
                 {filtered.map((item) => (
                   <TableRow key={item.id} isClickable>
-                    <TableCell className="font-mono text-3xs text-slate-500 font-medium">
+                    <TableCell className="font-mono text-3xs text-[#7e9aa6] font-medium">
                       {item.id}
                     </TableCell>
-                    <TableCell className="font-mono font-semibold text-purple-700">
+                    <TableCell className="font-mono font-semibold text-[#c084fc]">
                       <Link href={`/tickets/${item.ticket_id}`} className="hover:underline">
                         {item.ticket_id}
                       </Link>
@@ -173,7 +173,7 @@ export default function EscalationsPage() {
                         {item.target_team.replace(/_/g, " ")}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-slate-800 font-medium max-w-xs truncate">
+                    <TableCell className="text-white font-medium max-w-xs truncate">
                       {item.policy_reason}
                     </TableCell>
                     <TableCell>
@@ -182,7 +182,7 @@ export default function EscalationsPage() {
                     <TableCell>
                       <StatusPill status={item.status} size="sm" />
                     </TableCell>
-                    <TableCell className="text-slate-400 text-3xs font-mono">
+                    <TableCell className="text-[#7e9aa6] text-3xs font-mono">
                       {new Date(item.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </TableCell>
                     <TableCell>

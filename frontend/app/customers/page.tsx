@@ -88,7 +88,8 @@ export default function CustomersPage() {
   return (
     <AppShell pageTitle="Customer Directory & Profiles">
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 rounded-lg border border-slate-200">
+        {/* Search & Actions Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#0c181d] p-4 rounded-2xl border border-[#162d36] shadow-card">
           <div className="max-w-md flex-1">
             <Input
               placeholder="Search customers by name, ID, or domain..."
@@ -104,14 +105,14 @@ export default function CustomersPage() {
             isLoading={loading}
             leftIcon={<RefreshCwIcon size={14} />}
           >
-            Refresh
+            Refresh Directory
           </Button>
         </div>
 
         {loading && customers.length === 0 ? (
-          <div className="py-12 flex justify-center text-xs text-slate-500">
-            <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-brand-600 border-t-transparent mr-2" />
-            Loading customers directory...
+          <div className="py-16 flex flex-col items-center justify-center text-xs text-[#7e9aa6]">
+            <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-[#00d2b4] border-t-transparent mb-3" />
+            Loading customer accounts...
           </div>
         ) : filteredCustomers.length === 0 ? (
           <EmptyState
@@ -138,40 +139,53 @@ export default function CustomersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCustomers.map((cust) => (
-                  <TableRow key={cust.id} isClickable>
-                    <TableCell className="font-mono text-brand-600 font-medium">
-                      <Link href={`/customers/${cust.id}`} className="hover:underline">
-                        {cust.id}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="font-semibold text-slate-800">
-                      <Link href={`/customers/${cust.id}`} className="hover:text-brand-600">
-                        {cust.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-slate-600 font-normal">
-                      {cust.email}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={planBadges[cust.plan] || "neutral"} size="sm">
-                        {cust.plan.toUpperCase()}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="success" size="sm" dot>
-                        Active
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Link href={`/customers/${cust.id}`}>
-                        <Button variant="secondary" size="xs">
-                          360° Dossier
-                        </Button>
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {filteredCustomers.map((cust) => {
+                  const initials = cust.name
+                    .split(" ")
+                    .map((p) => p[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
+                  return (
+                    <TableRow key={cust.id} isClickable>
+                      <TableCell className="font-mono text-[#00d2b4] font-medium">
+                        <Link href={`/customers/${cust.id}`} className="hover:underline">
+                          {cust.id}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2.5">
+                          <div className="h-7 w-7 rounded-full bg-[#122830] text-[#00d2b4] border border-[#1b3d4a] flex items-center justify-center text-2xs font-bold flex-shrink-0">
+                            {initials}
+                          </div>
+                          <Link href={`/customers/${cust.id}`} className="font-semibold text-white hover:text-[#00d2b4] transition-colors">
+                            {cust.name}
+                          </Link>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-[#7e9aa6] font-normal font-mono text-xs">
+                        {cust.email}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={planBadges[cust.plan] || "neutral"} size="sm">
+                          {cust.plan.toUpperCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="success" size="sm" dot>
+                          Active
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Link href={`/customers/${cust.id}`}>
+                          <Button variant="secondary" size="xs">
+                            360° Dossier
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </Card>

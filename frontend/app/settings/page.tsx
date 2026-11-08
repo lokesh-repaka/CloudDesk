@@ -12,13 +12,15 @@ export default function SettingsPage() {
   return (
     <AppShell pageTitle="System Settings & Administration" userRole="admin">
       <div className="space-y-6">
-        <div className="flex items-center justify-between p-4 rounded-lg border border-amber-200 bg-amber-50/60">
-          <div className="flex items-center gap-2">
-            <ShieldIcon size={18} className="text-amber-700" />
+        <div className="flex items-center justify-between p-4 rounded-2xl border border-[#3b320e] bg-[#1a1607] shadow-card">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-[#2e2609] text-[#facc15] border border-[#4a3e12]">
+              <ShieldIcon size={18} />
+            </div>
             <div>
-              <h3 className="text-xs font-semibold text-amber-900">Administrator Controls</h3>
-              <p className="text-2xs text-amber-800">
-                You are authenticated with role <span className="font-bold">admin</span>. All settings are configurable.
+              <h3 className="text-xs font-semibold text-[#fef08a]">Administrator Controls</h3>
+              <p className="text-2xs text-[#facc15]/80 mt-0.5">
+                You are authenticated with role <span className="font-bold text-[#fef08a]">admin</span>. All settings are configurable.
               </p>
             </div>
           </div>
@@ -84,4 +86,3 @@ export default function SettingsPage() {
     </AppShell>
   );
 }
-

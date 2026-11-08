@@ -40,7 +40,7 @@ export function AppShell({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex">
+    <div className="min-h-screen bg-[#070d10] text-slate-100 flex">
       {/* Sidebar Navigation */}
       <Sidebar
         userRole={effectiveRole}
@@ -53,7 +53,7 @@ export function AppShell({
 
       {/* Main Content Area */}
       <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ease-in-out ${
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ease-in-out bg-[#070d10] ${
           collapsed ? "lg:pl-16" : "lg:pl-64"
         }`}
       >
@@ -69,9 +69,9 @@ export function AppShell({
 
         {/* Read-Only Viewer Alert Banner (AC-054) */}
         {effectiveRole === "viewer" && (
-          <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-800 flex items-center justify-between">
+          <div className="bg-[#291f08] border-b border-[#59400e] px-4 py-2 text-xs text-amber-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertTriangleIcon size={14} className="text-amber-600 flex-shrink-0" />
+              <AlertTriangleIcon size={14} className="text-[#f59e0b] flex-shrink-0" />
               <span>
                 <strong>Read-Only Mode (Viewer Role):</strong> Ticket workflow runs, customer replies, approval decisions, and escalations are disabled.
               </span>
@@ -80,7 +80,7 @@ export function AppShell({
         )}
 
         {/* Page Main Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
           {children}
         </main>
       </div>

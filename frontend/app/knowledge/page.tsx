@@ -116,7 +116,7 @@ export default function KnowledgePage() {
     <AppShell pageTitle="Knowledge Base & RAG Index">
       <div className="space-y-6">
         {/* Search & Actions Bar */}
-        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 rounded-lg border border-slate-200">
+        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#0c181d] p-4 rounded-2xl border border-[#162d36] shadow-card">
           <div className="flex-1 max-w-lg flex items-center gap-2">
             <Input
               placeholder="Search knowledge articles with semantic RAG..."
@@ -154,14 +154,14 @@ export default function KnowledgePage() {
 
         {/* Semantic Search Results or Article Catalog */}
         {searching ? (
-          <div className="py-12 flex justify-center text-xs text-slate-500">
-            <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-brand-600 border-t-transparent mr-2" />
+          <div className="py-16 flex flex-col items-center justify-center text-xs text-[#7e9aa6]">
+            <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-[#00d2b4] border-t-transparent mb-3" />
             Performing hybrid vector search...
           </div>
         ) : searchResults !== null ? (
           <div>
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-slate-700">
+              <h3 className="text-xs font-semibold text-[#8ea8b4] uppercase tracking-wider">
                 Hybrid Retrieval Results for &ldquo;{query}&rdquo; ({searchResults.length})
               </h3>
               <Button variant="ghost" size="xs" onClick={handleClear}>
@@ -183,19 +183,21 @@ export default function KnowledgePage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {searchResults.map((item) => (
-                  <Card key={item.id} padding="md" className="border-brand-200 bg-brand-50/20">
+                  <Card key={item.id} padding="md" className="border-[#1b434e] bg-[#0c242b] shadow-glow">
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 rounded bg-brand-100 text-brand-700">
-                          <BookOpenIcon size={16} />
+                      <div className="flex items-start gap-3">
+                        <div className="p-2.5 rounded-xl bg-[#12363f] text-[#00d2b4] border border-[#1b505c] flex-shrink-0">
+                          <BookOpenIcon size={18} />
                         </div>
                         <div>
-                          <span className="font-mono text-3xs text-brand-600">Relevance: {(item.score * 100).toFixed(1)}%</span>
-                          <h4 className="text-sm font-semibold text-slate-900">{item.title}</h4>
+                          <span className="inline-block font-mono text-3xs text-[#00d2b4] bg-[#07181d] px-2 py-0.5 rounded-full border border-[#164a54] mb-1">
+                            Relevance: {(item.score * 100).toFixed(1)}%
+                          </span>
+                          <h4 className="text-sm font-semibold text-white leading-snug">{item.title}</h4>
                         </div>
                       </div>
                     </div>
-                    <p className="mt-3 text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                    <p className="mt-3 text-xs text-[#9bb3bf] line-clamp-3 leading-relaxed">
                       {item.snippet}
                     </p>
                   </Card>
@@ -206,32 +208,32 @@ export default function KnowledgePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {articles.map((art) => (
-              <Card key={art.id} padding="md" className="hover:border-slate-300 transition-colors">
+              <Card key={art.id} padding="md" className="hover:border-[#1e3c48] transition-colors">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded bg-brand-50 text-brand-600">
-                      <BookOpenIcon size={16} />
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-[#122830] text-[#00d2b4] border border-[#1b3d4a] flex-shrink-0">
+                      <BookOpenIcon size={18} />
                     </div>
                     <div>
-                      <span className="font-mono text-3xs text-slate-400">{art.id} · {art.slug}</span>
-                      <h4 className="text-sm font-semibold text-slate-900 leading-snug">
+                      <span className="font-mono text-3xs text-[#7e9aa6]">{art.id} · {art.slug}</span>
+                      <h4 className="text-sm font-semibold text-white leading-snug">
                         {art.title}
                       </h4>
                     </div>
                   </div>
                 </div>
 
-                <p className="mt-2.5 text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                <p className="mt-3 text-xs text-[#7e9aa6] line-clamp-2 leading-relaxed">
                   {art.summary}
                 </p>
 
-                <div className="mt-4 flex items-center justify-between text-2xs text-slate-500 border-t border-slate-100 pt-3">
-                  <Badge variant="neutral" size="sm">
+                <div className="mt-4 flex items-center justify-between text-2xs text-[#52707e] border-t border-[#14232a] pt-3">
+                  <Badge variant="brand" size="sm">
                     {art.category.replace(/_/g, " ")}
                   </Badge>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     {art.tags.slice(0, 3).map((tag) => (
-                      <span key={tag} className="text-3xs text-slate-400">
+                      <span key={tag} className="text-3xs text-[#52707e] font-mono">
                         #{tag}
                       </span>
                     ))}

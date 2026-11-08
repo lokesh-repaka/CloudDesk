@@ -216,7 +216,7 @@ export function WorkflowSteps({ steps, currentStepId }: WorkflowStepsProps) {
   };
 
   return (
-    <div className="space-y-1.5 border border-slate-200 rounded-lg p-2.5 bg-slate-50">
+    <div className="space-y-1.5 border border-[#162d36] rounded-xl p-2.5 bg-[#091418]">
       {steps.map((step, idx) => {
         const isCurrent = step.state === "active" || step.id === currentStepId;
         const isPaused = step.state === "paused";
@@ -226,22 +226,22 @@ export function WorkflowSteps({ steps, currentStepId }: WorkflowStepsProps) {
         return (
           <div
             key={step.id}
-            className={`rounded-md border text-xs transition-colors overflow-hidden ${
+            className={`rounded-xl border text-xs transition-colors overflow-hidden ${
               isPaused
-                ? "bg-rose-50 border-rose-200 text-rose-950 shadow-xs"
+                ? "bg-[#251b07] border-[#5c400d] text-amber-200 shadow-xs"
                 : isCurrent
-                ? "bg-amber-50/80 border-amber-300 text-amber-950 font-medium shadow-xs"
+                ? "bg-[#0d2a2f] border-[#00d2b4]/50 text-[#2dd4bf] font-semibold shadow-glow"
                 : isCompleted
-                ? "bg-white border-slate-200 text-slate-800"
-                : "bg-transparent border-transparent text-slate-400"
+                ? "bg-[#0e1f26] border-[#183641] text-slate-200"
+                : "bg-transparent border-transparent text-[#5a7683]"
             }`}
           >
             <div
               onClick={() => toggleExpand(step.id)}
-              className="flex items-center justify-between p-2 cursor-pointer hover:bg-slate-100/60 select-none"
+              className="flex items-center justify-between p-2 cursor-pointer hover:bg-[#12272e] select-none transition-colors"
             >
               <div className="flex items-center space-x-2.5 truncate">
-                <span className="font-mono text-2xs w-4 text-slate-400">
+                <span className="font-mono text-3xs w-4 text-[#5a7683]">
                   {(idx + 1).toString().padStart(2, "0")}
                 </span>
                 <span className="truncate">{step.name}</span>
@@ -249,12 +249,12 @@ export function WorkflowSteps({ steps, currentStepId }: WorkflowStepsProps) {
 
               <div className="flex items-center space-x-2 shrink-0">
                 {step.durationMs !== undefined && (
-                  <span className="font-mono text-2xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                  <span className="font-mono text-3xs text-[#7e9aa6] bg-[#0c181d] px-1.5 py-0.5 rounded border border-[#162d36]">
                     {step.durationMs}ms
                   </span>
                 )}
                 {step.tokensUsed !== undefined && step.tokensUsed > 0 && (
-                  <span className="font-mono text-2xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded hidden sm:inline">
+                  <span className="font-mono text-3xs text-[#7e9aa6] bg-[#0c181d] px-1.5 py-0.5 rounded border border-[#162d36] hidden sm:inline">
                     {step.tokensUsed} tok
                   </span>
                 )}
@@ -264,20 +264,20 @@ export function WorkflowSteps({ steps, currentStepId }: WorkflowStepsProps) {
 
             {/* Expandable details */}
             {isExpanded && (
-              <div className="px-3 pb-2.5 pt-1 border-t border-slate-200/60 text-2xs text-slate-600 bg-white space-y-1.5">
-                <p className="font-sans text-slate-600">{step.description}</p>
+              <div className="px-3 pb-2.5 pt-1.5 border-t border-[#183641] text-3xs text-[#8fa7b3] bg-[#081216] space-y-1.5">
+                <p className="font-sans text-slate-300">{step.description}</p>
                 {step.costEstimate !== undefined && step.costEstimate > 0 && (
-                  <div className="flex items-center justify-between text-slate-500">
+                  <div className="flex items-center justify-between text-[#7e9aa6]">
                     <span>Estimated Cost:</span>
-                    <span className="font-mono font-medium text-slate-700">
+                    <span className="font-mono font-medium text-[#facc15]">
                       ${step.costEstimate.toFixed(5)}
                     </span>
                   </div>
                 )}
                 {step.eventData && Object.keys(step.eventData).length > 0 && (
-                  <div className="mt-1 pt-1 border-t border-slate-100">
-                    <span className="text-slate-400 font-mono">Payload:</span>
-                    <pre className="font-mono text-2xs bg-slate-50 p-1.5 rounded mt-0.5 overflow-x-auto text-slate-700">
+                  <div className="mt-1 pt-1 border-t border-[#162d36]">
+                    <span className="text-[#5a7683] font-mono">Payload:</span>
+                    <pre className="font-mono text-3xs bg-[#050a0c] p-1.5 rounded-lg mt-0.5 overflow-x-auto text-[#00d2b4] border border-[#162d36]">
                       {JSON.stringify(step.eventData, null, 2)}
                     </pre>
                   </div>

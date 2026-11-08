@@ -31,26 +31,26 @@ export function TicketHeader({ ticket, onRefresh, isRefreshing }: TicketHeaderPr
   });
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-5 mb-6 shadow-xs">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-4">
+    <div className="bg-[#0c181d] border border-[#162d36] rounded-2xl p-5 mb-6 shadow-card">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#162d36] pb-4 mb-4">
         <div className="flex items-center space-x-3">
           <Link
             href="/tickets"
-            className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
+            className="inline-flex items-center text-xs font-semibold text-[#7e9aa6] hover:text-white transition-colors"
           >
             <svg
-              className="w-4 h-4 mr-1 text-slate-400"
+              className="w-4 h-4 mr-1 text-[#5a7683]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Tickets
+            Tickets Queue
           </Link>
-          <span className="text-slate-300">/</span>
-          <span className="font-mono text-xs font-semibold text-slate-900 bg-slate-100 px-2.5 py-1 rounded">
-            {ticket.id}
+          <span className="text-[#334b56]">/</span>
+          <span className="font-mono text-xs font-bold text-[#00d2b4] bg-[#142830] px-2.5 py-1 rounded-lg border border-[#1f3e4b]">
+            #{ticket.id}
           </span>
           <StatusPill status={ticket.status} />
         </div>
@@ -78,7 +78,7 @@ export function TicketHeader({ ticket, onRefresh, isRefreshing }: TicketHeaderPr
       </div>
 
       <div className="space-y-3">
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
           {ticket.subject}
         </h1>
 
@@ -98,13 +98,13 @@ export function TicketHeader({ ticket, onRefresh, isRefreshing }: TicketHeaderPr
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-slate-500 pt-2 border-t border-slate-100">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-[#7e9aa6] pt-2 border-t border-[#162d36]">
           <span>Created: {formattedCreated}</span>
           <span>Last Updated: {formattedUpdated}</span>
           {ticket.customer_email && (
             <span>
               Customer:{" "}
-              <span className="font-medium text-slate-700">
+              <span className="font-semibold text-white">
                 {ticket.customer_name ? `${ticket.customer_name} (${ticket.customer_email})` : ticket.customer_email}
               </span>
             </span>

@@ -9,17 +9,29 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        dark: {
+          bg: "#070d10",
+          canvas: "#091216",
+          sidebar: "#050a0c",
+          card: "#0e181c",
+          "card-elevated": "#122026",
+          "card-hover": "#15252c",
+          border: "#182c34",
+          "border-subtle": "#112026",
+          input: "#0d1a1f",
+        },
         brand: {
-          50: "#eef2ff",
-          100: "#e0e7ff",
-          200: "#c7d2fe",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
-          800: "#3730a3",
-          900: "#312e81",
+          50: "#f0fdfa",
+          100: "#ccfbf1",
+          200: "#99f6e4",
+          300: "#5eead4",
+          400: "#2dd4bf",
+          500: "#14b8a6",
+          600: "#00d2b4",
+          700: "#0f766e",
+          800: "#115e59",
+          900: "#134e4a",
+          accent: "#00d2b4",
         },
       },
       fontSize: {
@@ -27,9 +39,12 @@ const config: Config = {
         "2xs": ["0.6875rem", { lineHeight: "1rem" }],
       },
       boxShadow: {
-        xs: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-        card: "0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.06)",
-        "card-hover": "0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04)",
+        xs: "0 1px 2px 0 rgba(0, 0, 0, 0.4)",
+        card: "0 2px 6px -1px rgba(0, 0, 0, 0.4), 0 1px 3px -1px rgba(0, 0, 0, 0.3)",
+        "card-hover": "0 8px 16px -2px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4)",
+        glow: "0 0 15px -3px rgba(0, 210, 180, 0.2)",
+        "glow-emerald": "0 0 15px -3px rgba(16, 185, 129, 0.2)",
+        "glow-amber": "0 0 15px -3px rgba(245, 158, 11, 0.2)",
       },
     },
   },
@@ -37,4 +52,3 @@ const config: Config = {
 };
 
 export default config;
-

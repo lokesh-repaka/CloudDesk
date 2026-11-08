@@ -51,7 +51,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-none"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs"
       role="dialog"
       aria-modal="true"
     >
@@ -60,24 +60,24 @@ export function Modal({
 
       {/* Dialog Box */}
       <div
-        className={`relative z-10 w-full ${sizeClasses[size]} bg-white rounded-lg border border-slate-200 shadow-lg overflow-hidden flex flex-col max-h-[90vh]`}
+        className={`relative z-10 w-full ${sizeClasses[size]} bg-[#0e1c22] rounded-2xl border border-[#1e3845] shadow-card-hover overflow-hidden flex flex-col max-h-[90vh]`}
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-4 sm:p-5 border-b border-slate-200 bg-slate-50/50">
+        <div className="flex items-start justify-between p-4 sm:p-5 border-b border-[#182f3a] bg-[#0b171c]">
           <div>
             {title && (
-              <h3 className="text-sm sm:text-base font-semibold text-slate-900 leading-tight">
+              <h3 className="text-sm sm:text-base font-bold text-white leading-tight">
                 {title}
               </h3>
             )}
             {description && (
-              <p className="text-xs text-slate-500 mt-1">{description}</p>
+              <p className="text-xs text-[#7e9aa6] mt-0.5">{description}</p>
             )}
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="p-1 rounded-lg text-[#7e9aa6] hover:text-white hover:bg-[#152730] transition-colors"
             aria-label="Close dialog"
           >
             <XIcon size={18} />
@@ -85,13 +85,13 @@ export function Modal({
         </div>
 
         {/* Content Body */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1 text-xs text-slate-700">
+        <div className="p-4 sm:p-5 overflow-y-auto flex-1 text-xs text-slate-200 bg-[#0e1c22]">
           {children}
         </div>
 
-        {/* Footer */}
+        {/* Optional Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-2 p-3 sm:p-4 border-t border-slate-200 bg-slate-50">
+          <div className="flex items-center justify-end gap-2.5 p-4 border-t border-[#182f3a] bg-[#0b171c]">
             {footer}
           </div>
         )}
@@ -99,4 +99,3 @@ export function Modal({
     </div>
   );
 }
-
