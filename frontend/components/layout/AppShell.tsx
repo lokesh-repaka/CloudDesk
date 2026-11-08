@@ -23,7 +23,7 @@ export function AppShell({
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const { user, role: authRole, logout } = useAuth();
+  const { user, role: authRole, logout, loginWithDemo } = useAuth();
 
   const effectiveRole: Role = propUserRole || authRole || "agent";
 
@@ -64,6 +64,7 @@ export function AppShell({
           backendStatus={backendStatus}
           onToggleSidebar={() => setMobileOpen(true)}
           onLogout={logout}
+          onSwitchPersona={loginWithDemo}
         />
 
         {/* Read-Only Viewer Alert Banner (AC-054) */}

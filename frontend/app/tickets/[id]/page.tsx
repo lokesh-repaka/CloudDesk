@@ -2,6 +2,7 @@
 
 import React, { use, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { AppShell } from "@/components/layout";
 import { api } from "@/lib/api";
 import {
   TicketDetail,
@@ -253,51 +254,57 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
   // Loading skeleton
   if (isLoading && !ticket) {
     return (
-      <div className="space-y-6">
-        <div className="h-6 w-48 bg-slate-200 rounded animate-pulse" />
-        <div className="h-32 bg-white rounded-lg border border-slate-200 p-6 animate-pulse space-y-4">
-          <div className="h-6 bg-slate-200 rounded w-1/3" />
-          <div className="h-4 bg-slate-100 rounded w-1/2" />
+      <AppShell pageTitle={`Ticket #${ticketId}`} userRole={role}>
+        <div className="space-y-6">
+          <div className="h-6 w-48 bg-slate-200 rounded animate-pulse" />
+          <div className="h-32 bg-white rounded-lg border border-slate-200 p-6 animate-pulse space-y-4">
+            <div className="h-6 bg-slate-200 rounded w-1/3" />
+            <div className="h-4 bg-slate-100 rounded w-1/2" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-4 h-96 bg-white rounded-lg border border-slate-200 animate-pulse" />
+            <div className="lg:col-span-4 h-96 bg-white rounded-lg border border-slate-200 animate-pulse" />
+            <div className="lg:col-span-4 h-96 bg-white rounded-lg border border-slate-200 animate-pulse" />
+          </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-4 h-96 bg-white rounded-lg border border-slate-200 animate-pulse" />
-          <div className="lg:col-span-4 h-96 bg-white rounded-lg border border-slate-200 animate-pulse" />
-          <div className="lg:col-span-4 h-96 bg-white rounded-lg border border-slate-200 animate-pulse" />
-        </div>
-      </div>
+      </AppShell>
     );
   }
 
   // Error state
   if (error && !ticket) {
     return (
-      <div className="space-y-6 max-w-2xl mx-auto py-12">
-        <Alert variant="danger" title="Unable to Load Ticket">
-          {error}
-        </Alert>
-        <div className="flex items-center space-x-3">
-          <Button variant="primary" onClick={fetchTicketData}>
-            Retry
-          </Button>
-          <Link href="/tickets">
-            <Button variant="secondary">Back to Tickets</Button>
-          </Link>
+      <AppShell pageTitle={`Ticket #${ticketId}`} userRole={role}>
+        <div className="space-y-6 max-w-2xl mx-auto py-12">
+          <Alert variant="danger" title="Unable to Load Ticket">
+            {error}
+          </Alert>
+          <div className="flex items-center space-x-3">
+            <Button variant="primary" onClick={fetchTicketData}>
+              Retry
+            </Button>
+            <Link href="/tickets">
+              <Button variant="secondary">Back to Tickets</Button>
+            </Link>
+          </div>
         </div>
-      </div>
+      </AppShell>
     );
   }
 
   if (!ticket) {
     return (
-      <div className="space-y-6 max-w-xl mx-auto py-12 text-center">
-        <h2 className="text-xl font-bold text-slate-800">Ticket Not Found</h2>
-        <p className="text-slate-500 text-sm">
-          The requested ticket #{ticketId} could not be located in the database.
-        </p>
-        <Link href="/tickets">
-          <Button variant="secondary">Return to Ticket Queue</Button>
-        </Link>
-      </div>
+      <AppShell pageTitle={`Ticket #${ticketId}`} userRole={role}>
+        <div className="space-y-6 max-w-xl mx-auto py-12 text-center">
+          <h2 className="text-xl font-bold text-slate-800">Ticket Not Found</h2>
+          <p className="text-slate-500 text-sm">
+            The requested ticket #{ticketId} could not be located in the database.
+          </p>
+          <Link href="/tickets">
+            <Button variant="secondary">Return to Ticket Queue</Button>
+          </Link>
+        </div>
+      </AppShell>
     );
   }
 
@@ -315,8 +322,9 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
     "";
 
   return (
-    <div className="space-y-6">
-      {/* Role Banner for Viewers (AC-054) */}
+    <AppShell pageTitle={`Ticket #${ticketId}`} userRole={role}>
+      <div className="space-y-6">
+        {/* Role Banner for Viewers (AC-054) */}
       {!canAct && (
         <Alert variant="warning" title="Viewer Access (Read-Only)">
           You are currently signed in as a <strong>{role}</strong>. All write actions,
@@ -413,5 +421,6 @@ export default function TicketDetailPage({ params }: TicketPageProps) {
         canAct={canAct}
       />
     </div>
+  </AppShell>
   );
 }

@@ -80,6 +80,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async function initSession() {
       const storedToken = getToken();
       if (!storedToken) {
+        // In local demo mode, auto-initialize demo agent session so the console
+        // displays live seeded tickets and agents immediately without requiring manual login.
+        try {
+          const demoTokens = await api.auth.getDemoTokens();
+          if (demoTokens && demoTokens.agent && isMounted) {
+            setToken(demoTokens.agent.token);
+            setTokenState(demoTokens.agent.token);
+            setUser({
+              id: demoTokens.agent.id,
+              email: demoTokens.agent.email,
+              full_name: demoTokens.agent.full_name,
+              role: "agent",
+            });
+            setIsLoading(false);
+            return;
+          }
+        } catch {
+          // Fall through to unauthenticated if backend unreachable
+        }
         if (isMounted) {
           setIsLoading(false);
         }

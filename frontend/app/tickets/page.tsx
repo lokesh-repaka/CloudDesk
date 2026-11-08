@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/layout";
 import { api, NetworkError } from "@/lib/api";
-import { TicketSummary, TicketStatus, Severity } from "@/lib/types";
+import { TicketSummary } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/Table";
 import { StatusPill } from "@/components/ui/StatusPill";
@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Alert } from "@/components/ui/Alert";
-import { SearchIcon, RefreshCwIcon, FilterIcon, TicketIcon } from "@/components/layout/Icons";
+import { SearchIcon, RefreshCwIcon, TicketIcon, ArrowRightIcon } from "@/components/layout/Icons";
 
 const FALLBACK_TICKETS: TicketSummary[] = [
   {
@@ -89,7 +89,6 @@ export default function TicketsPage() {
       setTickets(res.items);
     } catch (err: unknown) {
       if (err instanceof NetworkError) {
-        // Fallback to sample data for offline / demo resilience
         setTickets(FALLBACK_TICKETS);
       } else {
         setError(err instanceof Error ? err.message : "Failed to load support tickets.");
@@ -103,6 +102,16 @@ export default function TicketsPage() {
   useEffect(() => {
     fetchTickets();
   }, [fetchTickets]);
+
+  const counts = useMemo(() => {
+    return {
+      all: tickets.length,
+      waiting_on_approval: tickets.filter((t) => t.status === "waiting_on_approval").length,
+      in_progress: tickets.filter((t) => t.status === "in_progress").length,
+      escalated: tickets.filter((t) => t.status === "escalated").length,
+      resolved: tickets.filter((t) => t.status === "resolved").length,
+    };
+  }, [tickets]);
 
   const filteredTickets = tickets.filter((t) => {
     const matchesSearch =
@@ -127,8 +136,110 @@ export default function TicketsPage() {
           </Alert>
         )}
 
+        {/* Quick Filter Status Tabs */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setStatusFilter("all")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+              statusFilter === "all"
+                ? "bg-slate-900 text-white shadow-xs"
+                : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+            }`}
+          >
+            <span>All Tickets</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-full text-3xs ${
+                statusFilter === "all" ? "bg-slate-700 text-white" : "bg-slate-100 text-slate-600"
+              }`}
+            >
+              {counts.all}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter("waiting_on_approval")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+              statusFilter === "waiting_on_approval"
+                ? "bg-amber-600 text-white shadow-xs"
+                : "bg-white text-amber-800 hover:bg-amber-50 border border-amber-200"
+            }`}
+          >
+            <span>Needs Approval</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-full text-3xs ${
+                statusFilter === "waiting_on_approval"
+                  ? "bg-amber-800 text-white"
+                  : "bg-amber-100 text-amber-800"
+              }`}
+            >
+              {counts.waiting_on_approval}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter("in_progress")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+              statusFilter === "in_progress"
+                ? "bg-blue-600 text-white shadow-xs"
+                : "bg-white text-blue-800 hover:bg-blue-50 border border-blue-200"
+            }`}
+          >
+            <span>In Progress</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-full text-3xs ${
+                statusFilter === "in_progress" ? "bg-blue-800 text-white" : "bg-blue-100 text-blue-800"
+              }`}
+            >
+              {counts.in_progress}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter("escalated")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+              statusFilter === "escalated"
+                ? "bg-purple-600 text-white shadow-xs"
+                : "bg-white text-purple-800 hover:bg-purple-50 border border-purple-200"
+            }`}
+          >
+            <span>Escalated</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-full text-3xs ${
+                statusFilter === "escalated" ? "bg-purple-800 text-white" : "bg-purple-100 text-purple-800"
+              }`}
+            >
+              {counts.escalated}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter("resolved")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+              statusFilter === "resolved"
+                ? "bg-emerald-600 text-white shadow-xs"
+                : "bg-white text-emerald-800 hover:bg-emerald-50 border border-emerald-200"
+            }`}
+          >
+            <span>Resolved</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-full text-3xs ${
+                statusFilter === "resolved"
+                  ? "bg-emerald-800 text-white"
+                  : "bg-emerald-100 text-emerald-800"
+              }`}
+            >
+              {counts.resolved}
+            </span>
+          </button>
+        </div>
+
         {/* Filter Controls Bar */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-lg border border-slate-200">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-lg border border-slate-200 shadow-xs">
           <div className="flex-1 max-w-sm">
             <Input
               placeholder="Search by ticket ID, subject, customer..."
@@ -230,14 +341,25 @@ export default function TicketsPage() {
                       </Link>
                     </TableCell>
                     <TableCell className="font-medium text-slate-800">
-                      <div>{ticket.customer_name || ticket.customer_id}</div>
-                      {ticket.customer_email && (
-                        <div className="text-3xs text-slate-400 font-normal">{ticket.customer_email}</div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 rounded-full bg-slate-100 text-slate-700 font-bold text-3xs flex items-center justify-center border border-slate-200 flex-shrink-0">
+                          {(ticket.customer_name || ticket.customer_id || "C").charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold text-slate-900">
+                            {ticket.customer_name || ticket.customer_id}
+                          </div>
+                          {ticket.customer_email && (
+                            <div className="text-3xs text-slate-400 font-normal truncate">
+                              {ticket.customer_email}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </TableCell>
-                    <TableCell className="truncate max-w-xs font-normal">
+                    <TableCell className="max-w-xs">
                       <Link href={`/tickets/${ticket.id}`} className="hover:text-brand-600">
-                        {ticket.subject}
+                        <div className="font-normal text-slate-900 truncate">{ticket.subject}</div>
                       </Link>
                     </TableCell>
                     <TableCell>
@@ -256,7 +378,7 @@ export default function TicketsPage() {
                     </TableCell>
                     <TableCell>
                       <Link href={`/tickets/${ticket.id}`}>
-                        <Button variant="secondary" size="xs">
+                        <Button variant="secondary" size="xs" rightIcon={<ArrowRightIcon size={12} />}>
                           Inspect
                         </Button>
                       </Link>

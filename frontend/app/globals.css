@@ -15,8 +15,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Strict no-gradient policy per CLAUDE.md §11 */
-* {
+/* Zero-gradient enforcement per CLAUDE.md §11 */
+[class*="gradient"], [class*="from-"], [class*="to-"] {
   background-image: none !important;
 }
 

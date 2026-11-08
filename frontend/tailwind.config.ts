@@ -22,6 +22,15 @@ const config: Config = {
           900: "#312e81",
         },
       },
+      fontSize: {
+        "3xs": ["0.625rem", { lineHeight: "0.85rem" }],
+        "2xs": ["0.6875rem", { lineHeight: "1rem" }],
+      },
+      boxShadow: {
+        xs: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        card: "0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.06)",
+        "card-hover": "0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04)",
+      },
     },
   },
   plugins: [],
