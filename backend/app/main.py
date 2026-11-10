@@ -60,10 +60,11 @@ def create_application() -> FastAPI:
     app.add_middleware(AuditMiddleware)
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(RequestIdMiddleware)
+    is_wildcard = "*" in settings.CORS_ORIGINS
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ORIGINS,
-        allow_credentials=True,
+        allow_credentials=not is_wildcard,
         allow_methods=["*"],
         allow_headers=["*"],
         expose_headers=[

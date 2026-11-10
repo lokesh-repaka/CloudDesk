@@ -1,0 +1,48 @@
+services:
+  # ----------------------------------------------------------------------------
+  # CloudDesk Backend API (FastAPI + LangGraph Engine)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: clouddesk-api
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: "pip install uv && uv sync --frozen --no-dev"
+    startCommand: "uv run uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health/live
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEMO_MODE
+        value: "true"
+      - key: LLM_PROVIDER
+        value: fake
+      - key: VECTOR_STORE
+        value: memory
+      - key: USE_FAKE_REDIS
+        value: "true"
+      - key: DATABASE_URL
+        value: sqlite+aiosqlite:///./data/support.db
+      - key: CHECKPOINT_DB_PATH
+        value: ./data/checkpoints.db
+      - key: CORS_ORIGINS
+        value: "*"
+
+  # ----------------------------------------------------------------------------
+  # CloudDesk Frontend UI (Next.js 15 App Router)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: clouddesk-ui
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: frontend
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm run start"
+    healthCheckPath: /api/health
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: clouddesk-api
+          property: host

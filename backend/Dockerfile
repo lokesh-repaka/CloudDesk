@@ -5,7 +5,7 @@
 # ==============================================================================
 
 # Global argument for reproducible base image pinning
-ARG PYTHON_VERSION=3.12-slim
+ARG PYTHON_VERSION=3.13-slim
 
 # ------------------------------------------------------------------------------
 # Stage 1: Dependency Builder
