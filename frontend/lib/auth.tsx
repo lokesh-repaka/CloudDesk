@@ -164,12 +164,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
     } catch {
-      // Fallback: regular login with demo credentials
-      const demoUser = DEMO_USERS_MAP[selectedRole];
-      const res = await api.auth.login({ email: demoUser.email });
-      setToken(res.access_token);
-      setTokenState(res.access_token);
-      setUser(res.user);
+      try {
+        // Fallback: regular login with demo credentials
+        const demoUser = DEMO_USERS_MAP[selectedRole];
+        const res = await api.auth.login({ email: demoUser.email });
+        setToken(res.access_token);
+        setTokenState(res.access_token);
+        setUser(res.user);
+      } catch {
+        // Standalone offline demo fallback: instant sign-in without external dependency
+        const demoUser = DEMO_USERS_MAP[selectedRole];
+        const fallbackToken = `demo-token-${selectedRole}`;
+        const fallbackUser: UserProfileResponse = {
+          id: `usr-${selectedRole}-001`,
+          email: demoUser.email,
+          full_name: demoUser.name,
+          role: selectedRole,
+        };
+        setToken(fallbackToken);
+        setTokenState(fallbackToken);
+        setUser(fallbackUser);
+      }
     } finally {
       setIsLoading(false);
     }

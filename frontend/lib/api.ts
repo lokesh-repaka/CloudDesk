@@ -155,6 +155,10 @@ export function getApiBaseUrl(): string {
   if (envUrl && envUrl.trim().length > 0) {
     return envUrl.replace(/\/+$/, "");
   }
+  // When running on Vercel or cloud domain without external backend, use relative routes
+  if (typeof window !== "undefined" && window?.location?.hostname && window.location.hostname !== "localhost") {
+    return "";
+  }
   return "http://localhost:8000";
 }
 
