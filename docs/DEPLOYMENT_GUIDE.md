@@ -97,3 +97,4 @@ If you prefer to host **both** the backend and frontend on Render using a single
 - **Add to GitHub README**: Put badges linking to your live Vercel URL at the top of your GitHub repository.
 - **Render Free Tier Sleep**: On the free tier, Render sleeps after 15 minutes of inactivity. When someone clicks your portfolio link, the first backend request may take ~30 seconds to wake up, but the frontend stays instantly fast on Vercel.
 - **Custom Domain**: Both Vercel and Render allow adding custom domains (e.g. `clouddesk.lokeshrepaka.dev`) 100% free with automated SSL certificates.
+

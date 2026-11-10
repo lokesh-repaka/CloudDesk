@@ -46,3 +46,4 @@ services:
           type: web
           name: clouddesk-api
           property: host
+
