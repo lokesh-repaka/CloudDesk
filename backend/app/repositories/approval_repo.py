@@ -31,6 +31,20 @@ class ApprovalRepository(BaseRepository[ApprovalRequest]):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
+    async def list_all(
+        self,
+        status: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[ApprovalRequest]:
+        """Fetch approval requests with optional status filtering and pagination."""
+        stmt = select(ApprovalRequest).order_by(ApprovalRequest.created_at.desc())
+        if status:
+            stmt = stmt.where(ApprovalRequest.status == status)
+        stmt = stmt.limit(limit).offset(offset)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
     async def get_by_ticket(self, ticket_id: str) -> list[ApprovalRequest]:
         """Fetch all approval requests associated with a ticket."""
         stmt = (

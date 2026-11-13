@@ -1,5 +1,11 @@
 """CloudDesk Pydantic and schema definitions."""
 
+from backend.app.schemas.approvals import (
+    ApprovalDecisionResponse,
+    ApprovalRequestResponse,
+    ApproveDecisionRequest,
+    RejectDecisionRequest,
+)
 from backend.app.schemas.auth import (
     DemoTokensResponse,
     DemoTokenUser,
@@ -31,6 +37,10 @@ from backend.app.schemas.customers import (
     SubscriptionResponse,
     WorkspaceResponse,
 )
+from backend.app.schemas.escalations import (
+    EscalationResponse,
+    EscalationStatusUpdateRequest,
+)
 from backend.app.schemas.knowledge import (
     KnowledgeArticleDetail,
     KnowledgeArticleSummary,
@@ -55,11 +65,29 @@ from backend.app.schemas.tickets import (
     WorkflowRunResponse,
     WorkflowStateResponse,
 )
+from backend.app.schemas.workflow import (
+    Classification,
+    CustomerContext,
+    Diagnosis,
+    EscalationDecision,
+    Evidence,
+    PreviousCase,
+    ResolutionActionPlan,
+    ResolutionPlan,
+    SeverityAssessment,
+    WorkflowEventSchema,
+    WorkflowStateSchema,
+)
 
 __all__ = [
+    "ApprovalDecisionResponse",
+    "ApprovalRequestResponse",
     "ApprovalStatusEnum",
+    "ApproveDecisionRequest",
     "CategoryEnum",
     "ChannelEnum",
+    "Classification",
+    "CustomerContext",
     "CustomerCreate",
     "CustomerDetailResponse",
     "CustomerListResponse",
@@ -70,9 +98,14 @@ __all__ = [
     "CustomerUpdate",
     "DemoTokenUser",
     "DemoTokensResponse",
+    "Diagnosis",
     "EscalateRequest",
     "EscalateResponse",
+    "EscalationDecision",
+    "EscalationResponse",
     "EscalationStatusEnum",
+    "EscalationStatusUpdateRequest",
+    "Evidence",
     "KnowledgeArticleDetail",
     "KnowledgeArticleSummary",
     "KnowledgeEvidenceResponse",
@@ -80,11 +113,16 @@ __all__ = [
     "KnowledgeSearchRequest",
     "LoginRequest",
     "MemoryTypeEnum",
+    "PreviousCase",
+    "RejectDecisionRequest",
     "ReplyCreate",
     "ReplyResponse",
     "RequestInfoCreate",
+    "ResolutionActionPlan",
     "ResolutionActionStatusEnum",
+    "ResolutionPlan",
     "RoleEnum",
+    "SeverityAssessment",
     "SeverityEnum",
     "SubscriptionResponse",
     "TicketCreate",
@@ -98,8 +136,10 @@ __all__ = [
     "TokenResponse",
     "UserProfileResponse",
     "WorkflowEventResponse",
+    "WorkflowEventSchema",
     "WorkflowRunResponse",
     "WorkflowStateResponse",
+    "WorkflowStateSchema",
     "WorkflowStatusEnum",
     "WorkspaceResponse",
 ]

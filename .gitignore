@@ -34,3 +34,33 @@ docs/design.md
 docs/prompts/
 prompts/
 
+# Terraform remote state, plans and caches (CLAUDE.md §15, §18)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+backend.hcl
+*.backend.hcl
+
+# SQLite and checkpoint databases (CLAUDE.md §18)
+*.db
+*.sqlite
+*.sqlite3
+
+# Node & Frontend dependencies and build output
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+
+

@@ -99,6 +99,27 @@ async def create_escalation(
         raise ValueError("ticket_id, target_team, and reason are required to escalate.")
 
     async def _execute(s: AsyncSession) -> dict[str, Any]:
+        # Check if an open escalation already exists for ticket (idempotency, AC-044)
+        stmt_exist = select(Escalation).where(
+            Escalation.ticket_id == ticket_id,
+            Escalation.status == EscalationStatusEnum.OPEN.value,
+        )
+        res_exist = await s.execute(stmt_exist)
+        existing = res_exist.scalars().first()
+        if existing is not None:
+            return {
+                "id": existing.id,
+                "ticket_id": existing.ticket_id,
+                "target_team": existing.target_team,
+                "policy_reason": existing.policy_reason,
+                "severity": existing.severity,
+                "status": existing.status,
+                "policy_rule": policy_rule,
+                "created_at": (
+                    existing.created_at.isoformat() if existing.created_at else None
+                ),
+            }
+
         # Transition ticket status to escalated
         stmt = select(Ticket).where(Ticket.id == ticket_id)
         res = await s.execute(stmt)
@@ -277,4 +298,3 @@ def register_write_tools(registry: ToolRegistry | None = None) -> list[ToolDefin
     for t in tools:
         registered.append(target_registry.register(t))
     return registered
-
