@@ -88,17 +88,17 @@ export default function KnowledgePage() {
       // Fallback: client-side filter
       const filtered = articles.filter(
         (a) =>
-          a.title.toLowerCase().includes(query.toLowerCase()) ||
-          a.summary.toLowerCase().includes(query.toLowerCase())
+          (a.title || "").toLowerCase().includes(query.toLowerCase()) ||
+          (a.summary || "").toLowerCase().includes(query.toLowerCase())
       );
       setSearchResults(
         filtered.map((a) => ({
           id: a.id,
           title: a.title,
           source: a.slug,
-          snippet: a.summary,
+          snippet: a.summary || "",
           score: 0.95,
-          url: a.url,
+          url: a.url || `/knowledge/${a.slug}`,
           article_id: a.id,
         }))
       );
@@ -182,8 +182,8 @@ export default function KnowledgePage() {
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {searchResults.map((item) => (
-                  <Card key={item.id} padding="md" className="border-[#1b434e] bg-[#0c242b] shadow-glow">
+                {searchResults.map((item, idx) => (
+                  <Card key={item.id || item.article_id || `search-${idx}`} padding="md" className="border-[#1b434e] bg-[#0c242b] shadow-glow">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
                         <div className="p-2.5 rounded-xl bg-[#12363f] text-[#00d2b4] border border-[#1b505c] flex-shrink-0">
@@ -191,14 +191,14 @@ export default function KnowledgePage() {
                         </div>
                         <div>
                           <span className="inline-block font-mono text-3xs text-[#00d2b4] bg-[#07181d] px-2 py-0.5 rounded-full border border-[#164a54] mb-1">
-                            Relevance: {(item.score * 100).toFixed(1)}%
+                            Relevance: {((item.score ?? 0.9) * 100).toFixed(1)}%
                           </span>
-                          <h4 className="text-sm font-semibold text-white leading-snug">{item.title}</h4>
+                          <h4 className="text-sm font-semibold text-white leading-snug">{item.title || "Knowledge Document"}</h4>
                         </div>
                       </div>
                     </div>
                     <p className="mt-3 text-xs text-[#9bb3bf] line-clamp-3 leading-relaxed">
-                      {item.snippet}
+                      {item.snippet || (item as unknown as { content?: string }).content || "No snippet available."}
                     </p>
                   </Card>
                 ))}
@@ -224,15 +224,15 @@ export default function KnowledgePage() {
                 </div>
 
                 <p className="mt-3 text-xs text-[#7e9aa6] line-clamp-2 leading-relaxed">
-                  {art.summary}
+                  {art.summary || "No summary available."}
                 </p>
 
                 <div className="mt-4 flex items-center justify-between text-2xs text-[#52707e] border-t border-[#14232a] pt-3">
                   <Badge variant="brand" size="sm">
-                    {art.category.replace(/_/g, " ")}
+                    {(art.category || "general").replace(/_/g, " ")}
                   </Badge>
                   <div className="flex items-center gap-1.5">
-                    {art.tags.slice(0, 3).map((tag) => (
+                    {(art.tags || []).slice(0, 3).map((tag) => (
                       <span key={tag} className="text-3xs text-[#52707e] font-mono">
                         #{tag}
                       </span>

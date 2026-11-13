@@ -140,12 +140,13 @@ export default function CustomersPage() {
               </TableHeader>
               <TableBody>
                 {filteredCustomers.map((cust) => {
-                  const initials = cust.name
+                  const initials = (cust.name || "Customer")
                     .split(" ")
+                    .filter(Boolean)
                     .map((p) => p[0])
                     .join("")
                     .slice(0, 2)
-                    .toUpperCase();
+                    .toUpperCase() || "CU";
                   return (
                     <TableRow key={cust.id} isClickable>
                       <TableCell className="font-mono text-[#00d2b4] font-medium">
