@@ -20,7 +20,8 @@ Thumbs.db
 htmlcov/
 
 # Local databases & checkpoints
-data/
+/data/
+!frontend/data/
 
 # Specification documents & prompts
 user-stories.md
