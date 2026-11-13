@@ -1,0 +1,26 @@
+[
+  {
+    "id": "prod-101",
+    "name": "CloudDesk Core",
+    "slug": "clouddesk-core",
+    "description": "Centralized customer support and omnichannel ticket management platform."
+  },
+  {
+    "id": "prod-102",
+    "name": "CloudDesk Identity & SSO",
+    "slug": "clouddesk-identity",
+    "description": "Enterprise SAML 2.0 and OIDC single sign-on authentication gateway with MFA enforcement."
+  },
+  {
+    "id": "prod-103",
+    "name": "CloudDesk Storage Cloud",
+    "slug": "clouddesk-storage",
+    "description": "Multi-tenant asset and file storage infrastructure with tiered quota enforcement."
+  },
+  {
+    "id": "prod-104",
+    "name": "CloudDesk Autonomous Workflow",
+    "slug": "clouddesk-workflow",
+    "description": "LangGraph-powered AI agent multi-agent support resolution automation engine."
+  }
+]
